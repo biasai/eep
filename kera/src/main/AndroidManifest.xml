@@ -1,0 +1,68 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="cn.android.support.v7.lib.eep.kera">
+
+    <!--原始旧包名：cn.android.support.v7.lib.sin.crown.kotlin-->
+
+    <!--清单融合，写在application标签里面-->
+    <!--xmlns:tools="http://schemas.android.com/tools"-->
+    <!--注意,replace里面有的标签都必须重新定义不然也会报错-->
+    <!--tools:replace="android:icon,android:theme,android:name"-->
+    <application>
+        <!--android:name=".base.BaseApplication"-->
+        <!--android:theme="@style/crownBaseActivity"-->
+        //provider内容提供者，四大组件之一，在application标签内
+        //android:authorities="${applicationId}.FileProvider"
+        //自定义权限，${applicationId}是自己当前应用的包名(与类库无关。getPackageName()也一样,是当前应用的包名。)。必不可少
+        //android:exported="false" 是否设置为独立进程，必须为false不然报错。
+        //android:resource="@xml/file_paths" 共享文件的文件根目录，名字可以自定义【在res下面的xml目录，如果没有自己新建】,必不可少
+        <!--<provider-->
+        <!--android:name="android.support.v4.content.FileProvider"-->
+        <!--android:authorities="${applicationId}.FileProvider"-->
+        <!--android:exported="false"-->
+        <!--android:grantUriPermissions="true">-->
+        <!--<meta-data-->
+        <!--android:name="android.support.FILE_PROVIDER_PATHS"-->
+        <!--android:resource="@xml/file_paths" />-->
+        <!--</provider>-->
+
+        <!--android:name="android.support.v4.content.FileProvider"-->
+        <provider
+            android:name=".provider.KFileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+    </application>
+
+    //网络
+    <uses-permission android:name="android.permission.INTERNET" />
+    //wifi判断是否有网络
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    //手机震动
+    <uses-permission android:name="android.permission.VIBRATE" />
+    //手电筒
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+    //手机存储卡
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!--<uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />系统quanx -->
+    //相机，二维码
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    //录音
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    //手机状态，如设备号ID,调用 JNI ,及读取设备的权限
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    //杀死后台进程权限
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+</manifest>

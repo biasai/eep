@@ -1,0 +1,90 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.github.dcendents.android-maven'
+android {
+    compileSdkVersion 26//为了兼容，竟可能的小。为了兼容kotlin的anko,最小也得26。不然报错。放心这个不会和主moudle冲突。
+
+    defaultConfig {
+        //minSdkVersion 主工程的最低版本要求不能低于库工程
+        //targetSdkVersion：同样，主工程不能低于库工程
+        minSdkVersion 14 //如果不写的话，默认就是1。14 是4.0; 21是5.0;23是6.0;24是7.0;26是8.0
+        //targetSdkVersion 27 防止冲突，最好不写。交给主moudle去写。
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+}
+
+//写在当前moudle下的build.gradle中。公目录下的build.gradle无效。
+//即只对当前moudle有效。
+//强制让所有模块都用相同的支持库版本(v4或v7支持库)
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        def requested = details.requested
+        if (requested.group == 'com.android.support') {
+            if (!requested.name.startsWith("multidex")) {
+                //details.useVersion '26.0.2'//当前引用的版本
+                details.useVersion gradle.sinSupportVersion//当前引用的版本
+            }
+        }
+    }
+}
+
+ext.anko_version = '0.10.5'
+gradle.ext.sinSupportVersion = '27.1.1'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'com.android.support:appcompat-v7:' + gradle.sinSupportVersion
+    implementation 'com.android.support:recyclerview-v7:' + gradle.sinSupportVersion
+    implementation 'com.android.support:support-v4:' + gradle.sinSupportVersion
+    //包含了AppTheme和Appcompat主題。
+    api 'com.android.support:design:' + gradle.sinSupportVersion
+    //约束布局
+    api 'com.android.support.constraint:constraint-layout:1.1.0'
+
+    //集成kotlin的依赖。
+    api "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.1'
+    //基本普通依赖,一般这个就够了
+    api "org.jetbrains.anko:anko:$anko_version"
+
+    //以下依赖根据需求自己添加
+    // Appcompat-v7 (only Anko Commons)
+    api "org.jetbrains.anko:anko-appcompat-v7-commons:$anko_version"
+    // Appcompat-v7 (Anko Layouts)
+    api "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
+    api "org.jetbrains.anko:anko-coroutines:$anko_version"
+    // CardView-v7
+    api "org.jetbrains.anko:anko-cardview-v7:$anko_version"
+    // Design
+    api "org.jetbrains.anko:anko-design:$anko_version"
+    api "org.jetbrains.anko:anko-design-coroutines:$anko_version"
+    // GridLayout-v7
+    api "org.jetbrains.anko:anko-gridlayout-v7:$anko_version"
+    // Percent
+    api "org.jetbrains.anko:anko-percent:$anko_version"
+    // RecyclerView-v7
+    api "org.jetbrains.anko:anko-recyclerview-v7:$anko_version"
+    api "org.jetbrains.anko:anko-recyclerview-v7-coroutines:$anko_version"
+    // Support-v4 (only Anko Commons)
+    api "org.jetbrains.anko:anko-support-v4-commons:$anko_version"
+    // Support-v4 (Anko Layouts)
+    api "org.jetbrains.anko:anko-support-v4:$anko_version"
+    // ConstraintLayout
+    api "org.jetbrains.anko:anko-constraint-layout:$anko_version"
+}

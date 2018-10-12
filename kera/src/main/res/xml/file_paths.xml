@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+//name是这个是根目录名称，可以自定义
+//path="."点代表所有目录
+<external-path
+    name="external_storage_root"
+    path="." />
+<files-path name="files_path" path="." />
+<external-files-path name="external_files_path" path="." />
+<external-cache-path name="external_cache_path" path="." />
+</paths>
