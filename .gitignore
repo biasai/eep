@@ -10,9 +10,11 @@
 .externalNativeBuild
 
 /build
+/myapplication
 /.idea
 /gradle
 eep.iml
+settings.gradle
 gradlew
 gradlew.bat
 local.properties
