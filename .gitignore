@@ -11,6 +11,8 @@
 
 /build
 /myapplication
+/myapplication2
+/app
 /.idea
 /gradle
 eep.iml
