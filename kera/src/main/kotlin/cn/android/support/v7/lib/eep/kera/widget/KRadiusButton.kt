@@ -14,6 +14,7 @@ import android.text.TextWatcher
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.TranslateAnimation
 import android.widget.Button
 import android.widget.EditText
@@ -60,6 +61,20 @@ import java.util.regex.Pattern
  */
 open class KRadiusButton : Button {
 
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)//默认就开启硬件加速，不然圆角无效果
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
     constructor(context: Context) : super(context) {}
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
@@ -76,7 +91,7 @@ open class KRadiusButton : Button {
     //fixme 必须在all_radius等圆角属性设置完成之后再调用。
     //触摸点击效果。
     open fun onPress() {
-        selectorRippleDrawable(Color.WHITE,Color.parseColor("#E4E4E4"))
+        selectorRippleDrawable(Color.WHITE, Color.parseColor("#E4E4E4"))
     }
 
     //手机号
@@ -356,24 +371,27 @@ open class KRadiusButton : Button {
     //fixme 点击事件，onError()没有错误返回时，才会触发
     fun onClick(onClick: () -> Unit) {
         setOnClickListener {
-            var isRegular = true//判断数据是否正确，默认正确。
-            onError?.let {
-                var error: String? = onRegular()
-                error?.apply {
-                    isRegular = false//数据错误。
-                    if (errorEditText != null) {
-                        if (errorEditText is KRadiusEditText) {
-                            it(this, errorEditText as KRadiusEditText)
+            //fixme 防止快速点击
+            if (!isFastClick()) {
+                var isRegular = true//判断数据是否正确，默认正确。
+                onError?.let {
+                    var error: String? = onRegular()
+                    error?.apply {
+                        isRegular = false//数据错误。
+                        if (errorEditText != null) {
+                            if (errorEditText is KRadiusEditText) {
+                                it(this, errorEditText as KRadiusEditText)
+                            } else {
+                                it(this, null)
+                            }
                         } else {
                             it(this, null)
                         }
-                    } else {
-                        it(this, null)
                     }
                 }
-            }
-            if (isRegular) {
-                onClick()//fixme 如果数据校验正确，才会触发点击事件
+                if (isRegular) {
+                    onClick()//fixme 如果数据校验正确，才会触发点击事件
+                }
             }
         }
     }
@@ -394,7 +412,7 @@ open class KRadiusButton : Button {
             if (!isPasswordCorrect(this.text.toString())) {
                 errorEditText = this
                 return password3Error//密码格式不正确（旧密码，一般旧密码都在前，所以先判断）
-            }else if (this is KRadiusEditText) {
+            } else if (this is KRadiusEditText) {
                 this.onError(false)//正确，就不显示错误图片。
             }
         }
@@ -403,7 +421,7 @@ open class KRadiusButton : Button {
             if (!isPasswordCorrect(this.text.toString())) {
                 errorEditText = this
                 return passwordError//密码格式不正确
-            }else if (this is KRadiusEditText) {
+            } else if (this is KRadiusEditText) {
                 this.onError(false)//正确，就不显示错误图片。
             }
         }
@@ -603,6 +621,21 @@ open class KRadiusButton : Button {
         }
     }
 
+    // 两次点击按钮之间的点击间隔不能少于1000毫秒（即1秒）
+    var MIN_CLICK_DELAY_TIME = 1000
+    var lastClickTime: Long = System.currentTimeMillis()//记录最后一次点击时间
+
+    //判断是否快速点击，true是快速点击，false不是
+    open fun isFastClick(): Boolean {
+        var flag = false
+        var curClickTime = System.currentTimeMillis()
+        if ((curClickTime - lastClickTime) <= MIN_CLICK_DELAY_TIME) {
+            flag = true//快速点击
+        }
+        lastClickTime = curClickTime
+        return flag
+    }
+
     //fixme 初始化=================================================================================
     init {
         setLayerType(View.LAYER_TYPE_HARDWARE, null)//开启硬件加速
@@ -678,7 +711,7 @@ open class KRadiusButton : Button {
      * isLoad 是否显示进度条，默认不显示
      * isRepeat 是否允许重复加载，默认允许
      */
-    fun autoUrlBg(url: String?, isLoad: Boolean = false,isRepeat:Boolean=true) {
+    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true) {
         if (isLoad && context != null && context is Activity) {
             KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).get() {
                 autoUrlBg = it
@@ -886,7 +919,31 @@ open class KRadiusButton : Button {
 
     var autoLeftPadding = 0f//左补丁(负数也有效哦)
     var autoTopPadding = 0f//上补丁
-    var isAutoCenter = true//位图是否居中,默认居中
+    var isAutoCenter = true//位图是否居中,默认居中（水平+垂直居中）
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenterHorizontal = false
+                isAutoCenterVertical = false
+            }
+        }
+    var isAutoCenterHorizontal = false//水平居中
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenter = false
+                isAutoCenterVertical = false
+            }
+        }
+    var isAutoCenterVertical = false//垂直居中
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenter = false
+                isAutoCenterHorizontal = false
+            }
+        }
+
     //画自定义背景
     open fun drawAutoBg(canvas: Canvas) {
         if (w <= 0 || h <= 0) {
@@ -914,7 +971,11 @@ open class KRadiusButton : Button {
             autoSelectBg?.apply {
                 if (!isRecycled) {
                     if (isAutoCenter) {
-                        canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()), kpx.centerBitmapY(this, h.toFloat()), paint)
+                        canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                    } else if (isAutoCenterHorizontal) {
+                        canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                    } else if (isAutoCenterVertical) {
+                        canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
                     } else {
                         canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
                     }
@@ -926,7 +987,11 @@ open class KRadiusButton : Button {
                 autoPressBg?.apply {
                     if (!isRecycled) {
                         if (isAutoCenter) {
-                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()), kpx.centerBitmapY(this, h.toFloat()), paint)
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                        } else if (isAutoCenterHorizontal) {
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                        } else if (isAutoCenterVertical) {
+                            canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
                         } else {
                             canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
                         }
@@ -937,7 +1002,11 @@ open class KRadiusButton : Button {
                 autoDefaultBg?.apply {
                     if (!isRecycled) {
                         if (isAutoCenter) {
-                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()), kpx.centerBitmapY(this, h.toFloat()), paint)
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                        } else if (isAutoCenterHorizontal) {
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                        } else if (isAutoCenterVertical) {
+                            canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
                         } else {
                             canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
                         }
@@ -1019,26 +1088,26 @@ open class KRadiusButton : Button {
         }
     }
 
-    var kradius= KRadius()
+    var kradius = KRadius()
     //画边框，圆角
     fun drawRadius(canvas: Canvas?) {
         this.let {
             kradius.apply {
-                x=0
-                y=0
-                w=it.w
-                h=it.h
-                all_radius=it.all_radius
-                left_top=it.left_top
-                left_bottom=it.left_bottom
-                right_top=it.right_top
-                right_bottom=it.right_bottom
-                strokeWidth=it.strokeWidth
-                strokeColor=it.strokeColor
-                strokeGradientStartColor=it.strokeGradientStartColor
-                strokeGradientEndColor=it.strokeGradientEndColor
-                strokeGradientColors=it.strokeGradientColors
-                strokeGradientOritation=it.strokeGradientOritation
+                x = 0
+                y = 0
+                w = it.w
+                h = it.h
+                all_radius = it.all_radius
+                left_top = it.left_top
+                left_bottom = it.left_bottom
+                right_top = it.right_top
+                right_bottom = it.right_bottom
+                strokeWidth = it.strokeWidth
+                strokeColor = it.strokeColor
+                strokeGradientStartColor = it.strokeGradientStartColor
+                strokeGradientEndColor = it.strokeGradientEndColor
+                strokeGradientColors = it.strokeGradientColors
+                strokeGradientOritation = it.strokeGradientOritation
                 drawRadius(canvas)
             }
         }

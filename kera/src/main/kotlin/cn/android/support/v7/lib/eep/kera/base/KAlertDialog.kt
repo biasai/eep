@@ -19,7 +19,7 @@ import cn.android.support.v7.lib.eep.kera.R
  * 使用說明：BaseAlertDialog(this).setContentView(R.layout.dialog_photo).builder()
  * Created by 彭治铭 on 2018/4/27.
  */
-class KAlertDialog(activity: Activity, isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(activity, R.layout.kera_dialog_base_alert,isStatus,isTransparent) {
+open class KAlertDialog(activity: Activity, isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(activity, R.layout.kera_dialog_base_alert,isStatus,isTransparent) {
 
 
     var view: View? = null //传入的布局

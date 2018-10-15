@@ -5,12 +5,14 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import cn.android.support.v7.lib.eep.kera.base.KView
 
 /**
  * 宽高，位置。必须和X轴，Y轴一致。
  */
 open abstract class KChart : KView {
+
     //关闭硬件加速。不然在部分手机，如小米。线条与线条之间的连接处有锯齿。
     constructor(context: Context?) : super(context, false) {}
 

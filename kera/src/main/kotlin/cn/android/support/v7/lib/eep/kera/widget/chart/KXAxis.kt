@@ -7,11 +7,27 @@ import android.view.View
 import cn.android.support.v7.lib.eep.kera.base.KView
 import cn.android.support.v7.lib.eep.kera.common.kpx
 import android.graphics.PaintFlagsDrawFilter
+import android.view.ViewGroup
 
 /**
  * X轴，水平方向。从左到右。
  */
 open class KXAxis : KView {
+
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
     //关闭硬件加速。不然在部分手机，如小米。线条与线条之间的连接处有锯齿。
     constructor(context: Context?) : super(context, false) {}
 

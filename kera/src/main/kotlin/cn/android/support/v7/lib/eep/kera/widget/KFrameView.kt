@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import cn.android.support.v7.lib.eep.kera.base.KView
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
 
@@ -14,6 +15,21 @@ import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
  * 帧动画控件
  */
 open class KFrameView : KView {
+
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)//默认就开启硬件加速，不然圆角无效果
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
     constructor(context: Context?) : super(context, true) {}
 
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {

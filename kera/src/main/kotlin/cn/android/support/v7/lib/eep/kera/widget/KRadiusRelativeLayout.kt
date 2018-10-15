@@ -9,6 +9,7 @@ import android.graphics.RectF
 import android.os.Build
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.TranslateAnimation
 import android.widget.RelativeLayout
 import cn.android.support.v7.lib.eep.kera.R
@@ -30,6 +31,20 @@ import org.jetbrains.anko.runOnUiThread
  */
 open class KRadiusRelativeLayout : RelativeLayout {
 
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)//默认就开启硬件加速，不然圆角无效果
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
     constructor(context: Context) : super(context) {}
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
@@ -41,6 +56,44 @@ open class KRadiusRelativeLayout : RelativeLayout {
             right_top = typedArray?.getDimension(R.styleable.RoundCornersRect_radian_right_top, all_radius)
             right_bottom = typedArray?.getDimension(R.styleable.RoundCornersRect_radian_right_bottom, all_radius)
         }
+    }
+
+    // 两次点击按钮之间的点击间隔不能少于1000毫秒（即1秒）
+    var MIN_CLICK_DELAY_TIME = 1000
+    var lastClickTime: Long = System.currentTimeMillis()//记录最后一次点击时间
+
+    //判断是否快速点击，true是快速点击，false不是
+    open fun isFastClick(): Boolean {
+        var flag = false
+        var curClickTime = System.currentTimeMillis()
+        if ((curClickTime - lastClickTime) <= MIN_CLICK_DELAY_TIME) {
+            flag = true//快速点击
+        }
+        lastClickTime = curClickTime
+        return flag
+    }
+
+    private var onClick: (() -> Unit)? = null
+    private var onClickes = mutableListOf<() -> Unit>()
+    private var hasClick = false//判断是否已经添加了点击事情。
+    //fixme 自定义点击事件，可以添加多个点击事情。互不影响
+    open fun onClick(onClick: () -> Unit) {
+        if (!hasClick) {
+            isClickable = true//设置具备点击能力
+            //点击事件
+            setOnClickListener {
+                //fixme 防止快速点击
+                if (!isFastClick()) {
+                    for (i in onClickes) {
+                        i?.let {
+                            it()//点击事件
+                        }
+                    }
+                }
+            }
+            hasClick = true
+        }
+        onClickes.add(onClick)
     }
 
     //触摸点击效果。
@@ -424,7 +477,31 @@ open class KRadiusRelativeLayout : RelativeLayout {
 
     var autoLeftPadding = 0f//左补丁(负数也有效哦)
     var autoTopPadding = 0f//上补丁
-    var isAutoCenter = true//位图是否居中,默认居中
+    var isAutoCenter = true//位图是否居中,默认居中（水平+垂直居中）
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenterHorizontal = false
+                isAutoCenterVertical = false
+            }
+        }
+    var isAutoCenterHorizontal = false//水平居中
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenter = false
+                isAutoCenterVertical = false
+            }
+        }
+    var isAutoCenterVertical = false//垂直居中
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenter = false
+                isAutoCenterHorizontal = false
+            }
+        }
+
     //画自定义背景
     open fun drawAutoBg(canvas: Canvas) {
         if (w <= 0 || h <= 0) {
@@ -452,7 +529,11 @@ open class KRadiusRelativeLayout : RelativeLayout {
             autoSelectBg?.apply {
                 if (!isRecycled) {
                     if (isAutoCenter) {
-                        canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()), kpx.centerBitmapY(this, h.toFloat()), paint)
+                        canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                    } else if (isAutoCenterHorizontal) {
+                        canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                    } else if (isAutoCenterVertical) {
+                        canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
                     } else {
                         canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
                     }
@@ -464,7 +545,11 @@ open class KRadiusRelativeLayout : RelativeLayout {
                 autoPressBg?.apply {
                     if (!isRecycled) {
                         if (isAutoCenter) {
-                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()), kpx.centerBitmapY(this, h.toFloat()), paint)
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                        } else if (isAutoCenterHorizontal) {
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                        } else if (isAutoCenterVertical) {
+                            canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
                         } else {
                             canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
                         }
@@ -475,7 +560,11 @@ open class KRadiusRelativeLayout : RelativeLayout {
                 autoDefaultBg?.apply {
                     if (!isRecycled) {
                         if (isAutoCenter) {
-                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()), kpx.centerBitmapY(this, h.toFloat()), paint)
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                        } else if (isAutoCenterHorizontal) {
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                        } else if (isAutoCenterVertical) {
+                            canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
                         } else {
                             canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
                         }
