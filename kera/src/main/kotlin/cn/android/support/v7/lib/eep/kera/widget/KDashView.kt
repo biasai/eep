@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import cn.android.support.v7.lib.eep.kera.base.KView
 import cn.android.support.v7.lib.eep.kera.common.kpx
 
@@ -12,6 +13,13 @@ import cn.android.support.v7.lib.eep.kera.common.kpx
  * 如果宽大于高，虚线是水平的。如果高大于宽，虚线是垂直的。
  */
 open class KDashView : KView {
+
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null)//虚线必须关闭硬件加速
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+
     //关闭硬件加速。不然在部分手机，如小米。线条与线条之间的连接处有锯齿。
     constructor(context: Context?) : super(context, false) {}
 

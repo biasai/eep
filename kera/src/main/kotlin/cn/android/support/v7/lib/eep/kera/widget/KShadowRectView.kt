@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import cn.android.support.v7.lib.eep.kera.R
 import cn.android.support.v7.lib.eep.kera.common.kpx
 
@@ -12,6 +13,20 @@ import cn.android.support.v7.lib.eep.kera.common.kpx
  * Created by 彭治铭 on 2018/7/1.
  */
 open class KShadowRectView : View {
+
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
     constructor(context: Context) : super(context) {}
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {

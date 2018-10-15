@@ -4,11 +4,25 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 
 /**
  * 数字进度条
  */
 open class KNumberProgressBar : View {
+
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
 
     constructor(context: Context) : super(context) {}
 

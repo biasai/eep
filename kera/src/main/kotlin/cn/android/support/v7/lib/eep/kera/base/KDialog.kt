@@ -283,4 +283,30 @@ abstract class KDialog(open var act: Activity?, open var layoutId: Int = 0, open
         }
     }
 
+    // 两次点击按钮之间的点击间隔不能少于1000毫秒（即1秒）
+    var MIN_CLICK_DELAY_TIME = 1000
+    var lastClickTime: Long = System.currentTimeMillis()//记录最后一次点击时间
+
+    //判断是否快速点击，true是快速点击，false不是
+    open fun isFastClick(): Boolean {
+        var flag = false
+        var curClickTime = System.currentTimeMillis()
+        if ((curClickTime - lastClickTime) <= MIN_CLICK_DELAY_TIME) {
+            flag = true//快速点击
+        }
+        lastClickTime = curClickTime
+        return flag
+    }
+
+    //fixme 自定义点击事件，可以添加多个点击事情。互不影响
+    open fun onClick(view: View?, onClick: () -> Unit) {
+        //点击事件
+        view?.setOnClickListener {
+            //fixme 防止快速点击
+            if (!isFastClick()) {
+                onClick()//点击事件
+            }
+        }
+    }
+
 }

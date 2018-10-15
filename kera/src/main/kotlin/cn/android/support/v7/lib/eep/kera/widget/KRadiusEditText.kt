@@ -11,10 +11,7 @@ import android.os.Build
 import android.text.*
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
-import android.view.Gravity
-import android.view.KeyEvent
-import android.view.MotionEvent
-import android.view.View
+import android.view.*
 import android.view.animation.TranslateAnimation
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
@@ -39,7 +36,41 @@ import org.jetbrains.anko.*
  */
 open class KRadiusEditText : EditText {
 
+    constructor(viewGroup: ViewGroup) : this(viewGroup.context, 0) {
+    }
+
+    constructor(viewGroup: ViewGroup, type: Int = 0) : super(viewGroup.context) {
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)//默认就开启硬件加速，不然圆角无效果
+        if (type == 0) {
+            //取消掉下线横线
+            isLineAnime = false
+            lineStrokeWidth = 0F
+            lineStrokeColor = Color.TRANSPARENT
+            leftPadding = 0
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
     constructor(context: Context) : super(context) {}
+
+    constructor(context: Context, type: Int = 0) : super(context) {
+        if (type == 0) {
+            //取消掉下线横线
+            isLineAnime = false
+            lineStrokeWidth = 0F
+            lineStrokeColor = Color.TRANSPARENT
+            leftPadding = 0
+        }
+    }
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val typedArray = context?.obtainStyledAttributes(attrs, R.styleable.RoundCornersRect)
@@ -723,6 +754,44 @@ open class KRadiusEditText : EditText {
         return KRegexUtils.getInstance().isBankCard(this.text.toString().trim())
     }
 
+    // 两次点击按钮之间的点击间隔不能少于1000毫秒（即1秒）
+    var MIN_CLICK_DELAY_TIME = 1000
+    var lastClickTime: Long = System.currentTimeMillis()//记录最后一次点击时间
+
+    //判断是否快速点击，true是快速点击，false不是
+    open fun isFastClick(): Boolean {
+        var flag = false
+        var curClickTime = System.currentTimeMillis()
+        if ((curClickTime - lastClickTime) <= MIN_CLICK_DELAY_TIME) {
+            flag = true//快速点击
+        }
+        lastClickTime = curClickTime
+        return flag
+    }
+
+    private var onClick: (() -> Unit)? = null
+    private var onClickes = mutableListOf<() -> Unit>()
+    private var hasClick = false//判断是否已经添加了点击事情。
+    //fixme 自定义点击事件，可以添加多个点击事情。互不影响
+    open fun onClick(onClick: () -> Unit) {
+        if (!hasClick) {
+            isClickable = true//设置具备点击能力
+            //点击事件
+            setOnClickListener {
+                //fixme 防止快速点击
+                if (!isFastClick()) {
+                    for (i in onClickes) {
+                        i?.let {
+                            it()//点击事件
+                        }
+                    }
+                }
+            }
+            hasClick = true
+        }
+        onClickes.add(onClick)
+    }
+
     init {
         setLayerType(View.LAYER_TYPE_HARDWARE, null)//开启硬件加速
         KView.typeface?.let {
@@ -822,7 +891,7 @@ open class KRadiusEditText : EditText {
      * isLoad 是否显示进度条，默认不显示
      * isRepeat 是否允许重复加载，默认允许
      */
-    fun autoUrlBg(url: String?, isLoad: Boolean = false,isRepeat:Boolean=true) {
+    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true) {
         if (isLoad && context != null && context is Activity) {
             KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).get() {
                 autoUrlBg = it
@@ -1030,7 +1099,31 @@ open class KRadiusEditText : EditText {
 
     var autoLeftPadding = 0f//左补丁(负数也有效哦)
     var autoTopPadding = 0f//上补丁
-    var isAutoCenter = true//位图是否居中,默认居中
+    var isAutoCenter = true//位图是否居中,默认居中（水平+垂直居中）
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenterHorizontal = false
+                isAutoCenterVertical = false
+            }
+        }
+    var isAutoCenterHorizontal = false//水平居中
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenter = false
+                isAutoCenterVertical = false
+            }
+        }
+    var isAutoCenterVertical = false//垂直居中
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenter = false
+                isAutoCenterHorizontal = false
+            }
+        }
+
     //画自定义背景
     open fun drawAutoBg(canvas: Canvas) {
         if (w <= 0 || h <= 0) {
@@ -1058,7 +1151,11 @@ open class KRadiusEditText : EditText {
             autoSelectBg?.apply {
                 if (!isRecycled) {
                     if (isAutoCenter) {
-                        canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()), kpx.centerBitmapY(this, h.toFloat()), paint)
+                        canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                    } else if (isAutoCenterHorizontal) {
+                        canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                    } else if (isAutoCenterVertical) {
+                        canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
                     } else {
                         canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
                     }
@@ -1070,7 +1167,11 @@ open class KRadiusEditText : EditText {
                 autoPressBg?.apply {
                     if (!isRecycled) {
                         if (isAutoCenter) {
-                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()), kpx.centerBitmapY(this, h.toFloat()), paint)
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                        } else if (isAutoCenterHorizontal) {
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                        } else if (isAutoCenterVertical) {
+                            canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
                         } else {
                             canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
                         }
@@ -1081,7 +1182,11 @@ open class KRadiusEditText : EditText {
                 autoDefaultBg?.apply {
                     if (!isRecycled) {
                         if (isAutoCenter) {
-                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()), kpx.centerBitmapY(this, h.toFloat()), paint)
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                        } else if (isAutoCenterHorizontal) {
+                            canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                        } else if (isAutoCenterVertical) {
+                            canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
                         } else {
                             canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
                         }
@@ -1206,26 +1311,26 @@ open class KRadiusEditText : EditText {
         }
     }
 
-    var kradius= KRadius()
+    var kradius = KRadius()
     //画边框，圆角
     fun drawRadius(canvas: Canvas?) {
         this.let {
             kradius.apply {
-                x=0
-                y=0
-                w=it.w
-                h=it.h
-                all_radius=it.all_radius
-                left_top=it.left_top
-                left_bottom=it.left_bottom
-                right_top=it.right_top
-                right_bottom=it.right_bottom
-                strokeWidth=it.strokeWidth
-                strokeColor=it.strokeColor
-                strokeGradientStartColor=it.strokeGradientStartColor
-                strokeGradientEndColor=it.strokeGradientEndColor
-                strokeGradientColors=it.strokeGradientColors
-                strokeGradientOritation=it.strokeGradientOritation
+                x = 0
+                y = 0
+                w = it.w
+                h = it.h
+                all_radius = it.all_radius
+                left_top = it.left_top
+                left_bottom = it.left_bottom
+                right_top = it.right_top
+                right_bottom = it.right_bottom
+                strokeWidth = it.strokeWidth
+                strokeColor = it.strokeColor
+                strokeGradientStartColor = it.strokeGradientStartColor
+                strokeGradientEndColor = it.strokeGradientEndColor
+                strokeGradientColors = it.strokeGradientColors
+                strokeGradientOritation = it.strokeGradientOritation
                 drawRadius(canvas)
             }
         }

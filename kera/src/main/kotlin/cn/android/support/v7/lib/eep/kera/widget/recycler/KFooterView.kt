@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.TextView
 import cn.android.support.v7.lib.eep.kera.common.kpx
 import android.graphics.SweepGradient
+import android.view.ViewGroup
 
 
 /**
@@ -18,6 +19,21 @@ import android.graphics.SweepGradient
  * //fixme 文本默认右居中，文本就是普通的TextView文本，可以自由控制
  */
 open class KFooterView : TextView {
+
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
     //默认开启硬件加速
     constructor(context: Context?, HARDWARE: Boolean = true) : super(context) {
         if (HARDWARE) {

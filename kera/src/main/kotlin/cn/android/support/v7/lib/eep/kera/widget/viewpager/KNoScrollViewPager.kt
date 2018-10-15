@@ -6,6 +6,8 @@ import android.support.v4.view.ViewPager
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 
 /**
  * 禁止滑动的ViewPager,也可以继承VerticalViewPager
@@ -16,6 +18,20 @@ import android.view.MotionEvent
  * 默认禁止滑动，禁止快速滑动。
  */
 class KNoScrollViewPager : ViewPager {
+
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
 
     var isScroll: Boolean = false//true 能滑动，false不能滑动。默认不能触摸滑动
     var isFastScroll: Boolean = false//true快速滑动[也会禁止掉触摸滑动]，手指轻轻一划。就到下一页。false不能快速滑动

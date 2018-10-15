@@ -10,6 +10,8 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.support.v4.view.ViewPager
 import android.util.AttributeSet
+import android.view.View
+import android.view.ViewGroup
 
 import cn.android.support.v7.lib.eep.kera.base.KView
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
@@ -33,6 +35,19 @@ import cn.android.support.v7.lib.eep.kera.utils.KProportionUtils
  * @author 彭治铭
  */
 class KTabLayoutBar : android.support.v7.widget.AppCompatImageView, ViewPager.OnPageChangeListener {
+
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
 
     private var tab: Bitmap? = null//位图
     private var color = Color.parseColor("#3388FF")//滑动条颜色，默认为蓝色

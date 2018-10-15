@@ -4,12 +4,27 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import cn.android.support.v7.lib.eep.kera.widget.KBounceScrollView
 
 /**
  * 背景颜色渐变的弹性ScrollView
  */
 open class KGradientScrollView : KBounceScrollView {
+
+    constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
+    constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
+        if (HARDWARE) {
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        } else {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        }
+        viewGroup.addView(this)//直接添加进去,省去addView(view)
+    }
+
     constructor(context: Context) : super(context) {}
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {}
 
