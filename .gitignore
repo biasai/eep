@@ -9,16 +9,7 @@
 /captures
 .externalNativeBuild
 
-/build
+
 /myapplication
 /myapplication2
 /app
-/.idea
-/gradle
-eep.iml
-settings.gradle
-gradlew
-gradlew.bat
-local.properties
-README.md
-.gitigonore
