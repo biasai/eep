@@ -13,7 +13,7 @@ import org.jetbrains.anko.verticalLayout
  * 进度条
  * Created by 彭治铭 on 2018/6/24.
  */
-open class KProgressbar(activity: Activity, isStatus: Boolean = true, isTransparent: Boolean = false) : KDialog(activity, isStatus = isStatus, isTransparent = isTransparent) {
+open class KProgressbar(activity: Activity, isStatus: Boolean = true, isTransparent: Boolean = false) : KDialog(activity, isStatus = isStatus, isTransparent = isTransparent,isInitUI = true) {
 
     override fun onCreateView(context: Context): View? {
         return context.UI {

@@ -16,7 +16,7 @@ import java.io.File
  * 版本更新
  * 使用说明：VersionUpdateDialog(this).setUrl(url).setSrcFileName("app名称带后缀（如果为null或""空，会自动获取网络上的名称）.apk")
  */
-open class KVersionUpdateDialog(context: Activity, isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(context, R.layout.kera_dialog_version_update,isStatus,isTransparent) {
+open class KVersionUpdateDialog(context: Activity, isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(context, R.layout.kera_dialog_version_update,isStatus,isTransparent,isInitUI = true) {
     //进度条
     val numprogressbar: KNumberProgressBar by lazy { findViewById<KNumberProgressBar>(R.id.numprogressbar) }
     //apk下载链接

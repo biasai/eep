@@ -17,7 +17,7 @@ import org.jetbrains.anko.*
 //            }.negative("NO"){
 //                ToastUtils.showToastView("NO!!!")
 //            }.isDismiss(false).show()
-open class KTimiAlertDialog(activity: Activity, isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(activity,isStatus = isStatus,isTransparent = true) {
+open class KTimiAlertDialog(activity: Activity, isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(activity,isStatus = isStatus,isTransparent = true,isInitUI = true) {
 
     override fun onCreateView(context: Context): View? {
         return context.UI {

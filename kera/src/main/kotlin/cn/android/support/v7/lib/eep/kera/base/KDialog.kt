@@ -22,7 +22,7 @@ import cn.android.support.v7.lib.eep.kera.R
  */
 //fixme isStatus 是否显示状态栏【true会显示状态栏，false不会显示状态栏】,默认有状态栏
 //fixme isTransparent 背景是否透明,true透明，false背景会有遮罩层半透明的效果。默认背景透明
-abstract class KDialog(open var act: Activity?, open var layoutId: Int = 0, open var isStatus: Boolean = true, open var isTransparent: Boolean = true, open var isInitUI: Boolean = false) {
+abstract class KDialog(open var act: Activity?, open var layoutId: Int = 0, open var isStatus: Boolean = true, open var isTransparent: Boolean = true, open var isInitUI: Boolean = true) {
     //fixme Activity不要使用全局变量。局部即可。防止内存泄露
     //fixme 不要使用单列模式，一个Activity就对应一个Dialog。（Dialog需要Activity的支持）
     var dialog: Dialog? = null
