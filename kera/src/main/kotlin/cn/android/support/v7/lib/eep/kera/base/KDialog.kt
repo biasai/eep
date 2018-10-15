@@ -203,11 +203,13 @@ abstract class KDialog(open var act: Activity?, open var layoutId: Int = 0, open
 
     //获取xml文件最外层控件。
     fun getParentView(window: Window?): ViewGroup? {
-        val decorView = window!!.decorView//布局里面的最顶层控件，本质上是FrameLayout(帧布局)，FrameLayout.LayoutParams
-        val contentView = decorView.findViewById<View>(android.R.id.content) as ViewGroup//我们的布局文件。就放在contentView里面。contentView本质上也是FrameLayout(帧布局)，FrameLayout.LayoutParams
-        val parent = contentView.getChildAt(0)//这就是我们xml布局文件最外层的那个父容器控件。
-        if (parent != null) {
-            return parent as ViewGroup
+        window?.let {
+            val decorView = it.decorView//布局里面的最顶层控件，本质上是FrameLayout(帧布局)，FrameLayout.LayoutParams
+            val contentView = decorView?.findViewById<View>(android.R.id.content) as ViewGroup//我们的布局文件。就放在contentView里面。contentView本质上也是FrameLayout(帧布局)，FrameLayout.LayoutParams
+            val parent = contentView?.getChildAt(0)//这就是我们xml布局文件最外层的那个父容器控件。
+            if (parent != null) {
+                return parent as ViewGroup
+            }
         }
         return null
     }
