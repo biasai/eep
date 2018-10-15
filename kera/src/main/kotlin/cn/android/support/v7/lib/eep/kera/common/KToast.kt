@@ -31,7 +31,8 @@ object KToast {
     var yOffset = kpx.y(160)//提示框的与屏幕底部的距离。
 
     //以下默认属性，可以全局修改。根据需求来改。
-    var defaultColor = Color.parseColor("#ab313131")//默认背景颜色（浅黑色）
+    //var defaultColor = Color.parseColor("#ab313131")//默认背景颜色（浅黑色）
+    var defaultColor = Color.parseColor("#ee313534")
     //var defaultColor = Color.parseColor("#61A465")//浅绿色，效果不错。
     var defaultPdding = kpx.x(24)//默认内补丁
     var defaultRadius = kpx.x(480f)//默认圆角半径（尽可能的大，确保圆形效果）

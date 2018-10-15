@@ -135,6 +135,7 @@ open class KAppCompatActivity : AppCompatActivity() {
     }
 
     private var exitTime: Long = 0
+    private var exitTime2: Long = 0
     var exitIntervalTime: Long = 2000//结束间隔时间
     //open var exitInfo = "再按一次退出"//退出提示信息[子类可以重写]
     open var exitInfo = "别点了，再点我就要走了"
@@ -146,10 +147,17 @@ open class KAppCompatActivity : AppCompatActivity() {
 
     //监听返回键
     override fun onBackPressed() {
-        if (System.currentTimeMillis() - exitTime > exitIntervalTime) {
-            onBackPressed1()//返回键第一次按下监听
+        if (System.currentTimeMillis() - exitTime2 > exitIntervalTime) {
+            exitTime2 = System.currentTimeMillis()
+            //返回键第一次按下监听
+            onBackPressed1?.let {
+                it()
+            }
         } else {
-            onBackPressed2()//第二次按下监听
+            //第二次按下监听
+            onBackPressed2?.let {
+                it()
+            }
         }
         if (isExit()) {
             if (System.currentTimeMillis() - exitTime > exitIntervalTime) {
@@ -160,16 +168,22 @@ open class KAppCompatActivity : AppCompatActivity() {
                 KActivityManager.getInstance().finishAllActivity()
                 KApplication.getInstance().exit()//退出应用（杀进程）
             }
-        } else {
+        } else if (onBackPressed1 == null && onBackPressed2 == null) {
             super.onBackPressed()
         }
     }
 
+    private var onBackPressed1: (() -> Unit)? = null
     //返回返回键第一次按下监听
-    open fun onBackPressed1() {}
+    fun onBackPressed1(onBackPressed1: (() -> Unit)?) {
+        this.onBackPressed1 = onBackPressed1
+    }
 
+    private var onBackPressed2: (() -> Unit)? = null
     //返回返回键第二次按下监听
-    open fun onBackPressed2() {}
+    fun onBackPressed2(onBackPressed2: (() -> Unit)?) {
+        this.onBackPressed2 = onBackPressed2
+    }
 
     // 两次点击按钮之间的点击间隔不能少于1000毫秒（即1秒）
     var MIN_CLICK_DELAY_TIME = 1000
