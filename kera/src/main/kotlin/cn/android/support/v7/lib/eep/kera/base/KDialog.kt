@@ -22,7 +22,7 @@ import cn.android.support.v7.lib.eep.kera.R
  */
 //fixme isStatus 是否显示状态栏【true会显示状态栏，false不会显示状态栏】,默认有状态栏
 //fixme isTransparent 背景是否透明,true透明，false背景会有遮罩层半透明的效果。默认背景透明
-abstract class KDialog(open var act: Activity?, open var layoutId: Int = 0, open var isStatus: Boolean = true, open var isTransparent: Boolean = true, open var isInitUI: Boolean = false) {
+abstract class KDialog(open var act: Activity?, open var layoutId: Int = 0, open var isStatus: Boolean = true, open var isTransparent: Boolean = true, open var isInitUI: Boolean = true) {
     //fixme Activity不要使用全局变量。局部即可。防止内存泄露
     //fixme 不要使用单列模式，一个Activity就对应一个Dialog。（Dialog需要Activity的支持）
     var dialog: Dialog? = null
@@ -203,11 +203,13 @@ abstract class KDialog(open var act: Activity?, open var layoutId: Int = 0, open
 
     //获取xml文件最外层控件。
     fun getParentView(window: Window?): ViewGroup? {
-        val decorView = window!!.decorView//布局里面的最顶层控件，本质上是FrameLayout(帧布局)，FrameLayout.LayoutParams
-        val contentView = decorView.findViewById<View>(android.R.id.content) as ViewGroup//我们的布局文件。就放在contentView里面。contentView本质上也是FrameLayout(帧布局)，FrameLayout.LayoutParams
-        val parent = contentView.getChildAt(0)//这就是我们xml布局文件最外层的那个父容器控件。
-        if (parent != null) {
-            return parent as ViewGroup
+        window?.let {
+            val decorView = it.decorView//布局里面的最顶层控件，本质上是FrameLayout(帧布局)，FrameLayout.LayoutParams
+            val contentView = decorView?.findViewById<View>(android.R.id.content) as ViewGroup//我们的布局文件。就放在contentView里面。contentView本质上也是FrameLayout(帧布局)，FrameLayout.LayoutParams
+            val parent = contentView?.getChildAt(0)//这就是我们xml布局文件最外层的那个父容器控件。
+            if (parent != null) {
+                return parent as ViewGroup
+            }
         }
         return null
     }

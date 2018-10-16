@@ -1,1 +1,1 @@
-include ':app',  ':kera'
+include ':kera', ':myapplication'

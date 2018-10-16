@@ -18,7 +18,7 @@ import org.jetbrains.anko.sdk25.coroutines.onClick
 /**
  * 滚轮弹框
  */
-open class KRollerDialog(activity: Activity, isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(activity, isStatus = isStatus, isTransparent = isTransparent) {
+open class KRollerDialog(activity: Activity, isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(activity, isStatus = isStatus, isTransparent = isTransparent,isInitUI = true) {
     var contenView: View? = null//包裹滚轮的容器，可以控制背景样式。
     var txtRelativeLayout: RelativeLayout? = null//文本容器
     var rollerView: KRollerView? = null//底部滚轮

@@ -20,7 +20,7 @@ import cn.android.support.v7.lib.eep.kera.view.KRollerView
 //            DateChooseBetweenDialog(this, DateChoose(), DateChoose()).setCallBack { dateChooseStart, dateChooseEnd ->
 //                Log.e("test", "回调\t开始日期:\t" + dateChooseStart.toString() + "\t结束日期:\t" + dateChooseEnd.toString())
 //            }.end()//选择结束日期
-open class KDateChooseBetweenDialog(context: Activity, var dateChooseStart: KDateChoose = KDateChoose(), var dateChooseEnd: KDateChoose = KDateChoose(), isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(context, R.layout.kera_dialog_date_choose_between,isStatus,isTransparent) {
+open class KDateChooseBetweenDialog(context: Activity, var dateChooseStart: KDateChoose = KDateChoose(), var dateChooseEnd: KDateChoose = KDateChoose(), isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(context, R.layout.kera_dialog_date_choose_between,isStatus,isTransparent,isInitUI = true) {
     val yyyy: KRollerView by lazy { findViewById<KRollerView>(R.id.crown_roller_yyyy) }
     val MM: KRollerView by lazy { findViewById<KRollerView>(R.id.crown_roller_MM) }
     val dd: KRollerView by lazy { findViewById<KRollerView>(R.id.crown_roller_dd) }

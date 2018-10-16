@@ -19,7 +19,7 @@ import cn.android.support.v7.lib.eep.kera.view.KRollerView
 //var dateChoose = DateChoose()
 //val dateChooseDialog:DateChooseDialog by lazy { DateChooseDialog(this, dateChoose).setCallBack { dateChoose = it }}
 //dateChooseDialog.show()
-open class KDateChooseDialog(context: Activity, var dateChoose: KDateChoose=KDateChoose(), isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(context, R.layout.kera_dialog_date_choose,isStatus,isTransparent) {
+open class KDateChooseDialog(context: Activity, var dateChoose: KDateChoose=KDateChoose(), isStatus: Boolean = true, isTransparent: Boolean = true) : KDialog(context, R.layout.kera_dialog_date_choose,isStatus,isTransparent,isInitUI = true) {
     val yyyy: KRollerView by lazy { findViewById<KRollerView>(R.id.crown_roller_yyyy) }
     val MM: KRollerView by lazy { findViewById<KRollerView>(R.id.crown_roller_MM) }
     val dd: KRollerView by lazy { findViewById<KRollerView>(R.id.crown_roller_dd) }
