@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.graphics.RectF
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.view.MotionEvent
 import android.view.View
@@ -20,6 +21,7 @@ import cn.android.support.v7.lib.eep.kera.https.KBitmaps
 import cn.android.support.v7.lib.eep.kera.utils.KTimerUtils
 import cn.android.support.v7.lib.eep.kera.utils.KSelectorUtils
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
+import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.runOnUiThread
@@ -55,6 +57,18 @@ open class KRadiusRelativeLayout : RelativeLayout {
             left_bottom = typedArray?.getDimension(R.styleable.RoundCornersRect_radian_left_bottom, all_radius)
             right_top = typedArray?.getDimension(R.styleable.RoundCornersRect_radian_right_top, all_radius)
             right_bottom = typedArray?.getDimension(R.styleable.RoundCornersRect_radian_right_bottom, all_radius)
+        }
+    }
+
+    open fun background(resId: Int) {
+        setBackgroundResource(resId)
+    }
+
+    open fun background(bitmap: Bitmap) {
+        if (Build.VERSION.SDK_INT >= 16) {
+            background = BitmapDrawable(bitmap)
+        } else {
+            backgroundDrawable = BitmapDrawable(bitmap)
         }
     }
 
@@ -97,8 +111,8 @@ open class KRadiusRelativeLayout : RelativeLayout {
     }
 
     //触摸点击效果。默认具备波浪效果
-    open fun onPress(isRipple: Boolean=true) {
-        KView.onPress(this,isRipple)
+    open fun onPress(isRipple: Boolean = true) {
+        KView.onPress(this, isRipple)
     }
 
     var bindView: View? = null//状态绑定的View
@@ -264,14 +278,28 @@ open class KRadiusRelativeLayout : RelativeLayout {
         }
     }
 
+    //fixme 防止无法获取宽和高，所以延迟100毫秒，这样就能获取控件的宽度和高度了。
+    fun autoUrlBgDelay(url: String?, delay: Long = 100) {
+        if (w <= 0 || h <= 0) {
+            //无法获取宽度和高度，就延迟再获取
+            async {
+                kotlinx.coroutines.experimental.delay(delay)
+                autoUrlBg(url)
+            }
+        } else {
+            autoUrlBg(url)
+        }
+    }
+
     /**
      * url 网络图片地址
      * isLoad 是否显示进度条，默认不显示
      * isRepeat 是否允许重复加载，默认允许
+     * fixme width,height位图的宽和高(最好手动设置一下，或者延迟一下，不能无法获取宽和高)
      */
-    fun autoUrlBg(url: String?, isLoad: Boolean = false,isRepeat:Boolean=true) {
+    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true, width: Int = this.w, height: Int = this.h) {
         if (isLoad && context != null && context is Activity) {
-            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).get() {
+            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).width(width).height(height).get() {
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
@@ -280,7 +308,8 @@ open class KRadiusRelativeLayout : RelativeLayout {
                 }
             }
         } else {
-            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).get() {
+            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).width(width).height(height).get() {
+                //Log.e("test", "成功:\t" + it.width)
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
@@ -512,7 +541,7 @@ open class KRadiusRelativeLayout : RelativeLayout {
         autoUrlBg?.apply {
             if (!isRecycled) {
                 if (width != w || height != h) {
-                    autoUrlBg = kpx.xBitmap(this, w, h)//位图和控件拉伸到一样大小
+                    autoUrlBg = kpx.xBitmap(this, w, h, isRecycle = false)//位图和控件拉伸到一样大小
                     autoUrlBg?.apply {
                         if (!isRecycled) {
                             canvas.drawBitmap(this, 0f, 0f, paint)
@@ -653,26 +682,26 @@ open class KRadiusRelativeLayout : RelativeLayout {
         }
     }
 
-    var kradius= KRadius()
+    var kradius = KRadius()
     //画边框，圆角
     fun drawRadius(canvas: Canvas?) {
         this.let {
             kradius.apply {
-                x=0
-                y=0
-                w=it.w
-                h=it.h
-                all_radius=it.all_radius
-                left_top=it.left_top
-                left_bottom=it.left_bottom
-                right_top=it.right_top
-                right_bottom=it.right_bottom
-                strokeWidth=it.strokeWidth
-                strokeColor=it.strokeColor
-                strokeGradientStartColor=it.strokeGradientStartColor
-                strokeGradientEndColor=it.strokeGradientEndColor
-                strokeGradientColors=it.strokeGradientColors
-                strokeGradientOritation=it.strokeGradientOritation
+                x = 0
+                y = 0
+                w = it.w
+                h = it.h
+                all_radius = it.all_radius
+                left_top = it.left_top
+                left_bottom = it.left_bottom
+                right_top = it.right_top
+                right_bottom = it.right_bottom
+                strokeWidth = it.strokeWidth
+                strokeColor = it.strokeColor
+                strokeGradientStartColor = it.strokeGradientStartColor
+                strokeGradientEndColor = it.strokeGradientEndColor
+                strokeGradientColors = it.strokeGradientColors
+                strokeGradientOritation = it.strokeGradientOritation
                 drawRadius(canvas)
             }
         }
@@ -701,7 +730,7 @@ open class KRadiusRelativeLayout : RelativeLayout {
     var w: Int = 0//获取控件的真实宽度
         get() {
             var w = width
-            if (layoutParams.width > w) {
+            if (layoutParams!=null&&layoutParams.width > w) {
                 w = layoutParams.width
             }
             return w
@@ -710,7 +739,7 @@ open class KRadiusRelativeLayout : RelativeLayout {
     var h: Int = 0//获取控件的真实高度
         get() {
             var h = height
-            if (layoutParams.height > h) {
+            if (layoutParams!=null&&layoutParams.height > h) {
                 h = layoutParams.height
             }
             return h
@@ -819,8 +848,9 @@ open class KRadiusRelativeLayout : RelativeLayout {
 
     //fixme 防止和以下方法冲突，all_radius不要设置默认值
     fun selectorRippleDrawable(NormalColor: String?, PressColor: String?, all_radius: Float) {
-        KSelectorUtils.selectorRippleDrawable(this, Color.parseColor(NormalColor), Color.parseColor(PressColor),  Color.parseColor(PressColor), left_top = all_radius, right_top = all_radius, right_bottom = all_radius, left_bottom = all_radius)
+        KSelectorUtils.selectorRippleDrawable(this, Color.parseColor(NormalColor), Color.parseColor(PressColor), Color.parseColor(PressColor), left_top = all_radius, right_top = all_radius, right_bottom = all_radius, left_bottom = all_radius)
     }
+
     /**
      * 波纹点击效果
      * all_radius 圆角
@@ -830,7 +860,7 @@ open class KRadiusRelativeLayout : RelativeLayout {
     }
 
     fun selectorRippleDrawable(NormalColor: String?, PressColor: String?, SelectColor: String? = PressColor, strokeWidth: Int = 0, strokeColor: Int = Color.TRANSPARENT, all_radius: Float = this.all_radius, left_top: Float = this.left_top, right_top: Float = this.right_top, right_bottom: Float = this.right_bottom, left_bottom: Float = this.left_bottom) {
-        KSelectorUtils.selectorRippleDrawable(this,Color.parseColor(NormalColor),Color.parseColor(PressColor),Color.parseColor(SelectColor),strokeWidth,strokeColor,all_radius,left_top,right_top,right_bottom,left_bottom)
+        KSelectorUtils.selectorRippleDrawable(this, Color.parseColor(NormalColor), Color.parseColor(PressColor), Color.parseColor(SelectColor), strokeWidth, strokeColor, all_radius, left_top, right_top, right_bottom, left_bottom)
     }
 
     /**
@@ -840,7 +870,7 @@ open class KRadiusRelativeLayout : RelativeLayout {
      * SelectColor 选中(默认和按下相同)背景颜色值
      */
     fun selectorRippleDrawable(NormalColor: Int?, PressColor: Int?, SelectColor: Int? = PressColor, strokeWidth: Int = 0, strokeColor: Int = Color.TRANSPARENT, all_radius: Float = this.all_radius, left_top: Float = this.left_top, right_top: Float = this.right_top, right_bottom: Float = this.right_bottom, left_bottom: Float = this.left_bottom) {
-        KSelectorUtils.selectorRippleDrawable(this,NormalColor,PressColor,SelectColor,strokeWidth,strokeColor,all_radius,left_top,right_top,right_bottom,left_bottom)
+        KSelectorUtils.selectorRippleDrawable(this, NormalColor, PressColor, SelectColor, strokeWidth, strokeColor, all_radius, left_top, right_top, right_bottom, left_bottom)
     }
 
     //属性动画集合
@@ -1048,6 +1078,7 @@ open class KRadiusRelativeLayout : RelativeLayout {
 
     //水平进度(范围 0F~ 100F),从左往右
     var horizontalProgress = 0f
+
     fun horizontalProgress(repeatCount: Int, duration: Long, vararg value: Float, AnimatorUpdateListener: ((values: Float) -> Unit)? = null): ObjectAnimator {
         return ofFloat("horizontalProgress", repeatCount, duration, *value, AnimatorUpdateListener = AnimatorUpdateListener)
     }

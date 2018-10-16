@@ -105,7 +105,8 @@ open class KPx {
     }
 
     //以x为标准适配位图
-    fun xBitmap(src: Bitmap, w: Int = 0, h: Int = 0): Bitmap {
+    //isRecycle 是否释放原图
+    fun xBitmap(src: Bitmap, w: Int = 0, h: Int = 0, isRecycle: Boolean = true): Bitmap {
         var width = w
         var height = h
         //如果宽度和高度小于0。就以位置自身的宽和高进行适配
@@ -116,14 +117,17 @@ open class KPx {
         }
         if (width > 0 && height > 0 && src.width != width) {
             var bm = Bitmap.createScaledBitmap(src, width, height, true)
-            src.recycle()//原有的位图释放掉
+            if (isRecycle) {
+                src.recycle()//原有的位图释放掉
+            }
             return bm
         }
         return src
     }
 
     //以y为标准适配位图
-    fun yBitmap(src: Bitmap, w: Int = 0, h: Int = 0): Bitmap {
+    //isRecycle 是否释放原图
+    fun yBitmap(src: Bitmap, w: Int = 0, h: Int = 0, isRecycle: Boolean = true): Bitmap {
         var width = w
         var height = h
         //如果宽度和高度小于0。就以位置自身的宽和高进行适配
@@ -134,12 +138,101 @@ open class KPx {
         }
         if (width > 0 && height > 0 && src.width != width) {
             var bm = Bitmap.createScaledBitmap(src, width, height, true)
-            src.recycle()//原有的位图释放掉
+            if (isRecycle) {
+                src.recycle()//原有的位图释放掉
+            }
             return bm
         }
         return src
     }
 
+    //等比压缩，压缩之后，宽和高相等。
+    //参数values是压缩后的宽度及高度。
+    //计算比率时，千万要注意，一定要使用float类型。千万不要使用int类型。不然计算不出。
+    //这个方法，图片不会变形[取中间的那一部分]
+    //isRecycle 是否释放原图
+    fun GeomeBitmap(src: Bitmap, value: Float, isRecycle: Boolean = true): Bitmap {
+        if (src.width == value.toInt() && src.height == value.toInt()) {
+            return src//防止重复压缩
+        }
+        var dst: Bitmap
+        if (src.width == src.height) {
+            dst = Bitmap.createScaledBitmap(src, value.toInt(), value.toInt(), true)
+        } else {
+            //以较小边长为计算标准
+            //宽小于高
+            if (src.width < src.height) {
+                val p = src.width.toFloat() / value
+                val heith = src.height.toFloat() / p
+                dst = Bitmap.createScaledBitmap(src, value.toInt(), heith.toInt(), true)
+                val y = (dst.height - dst.width) / 2
+                dst = Bitmap.createBitmap(dst, 0, y, dst.width, dst.width)
+            } else {
+                //宽大于高，或等于高。
+                //高小于宽
+                val p = src.height.toFloat() / value
+                val width = src.width.toFloat() / p
+                dst = Bitmap.createScaledBitmap(src, width.toInt(), value.toInt(), true)
+                val x = (dst.width - dst.height) / 2
+                dst = Bitmap.createBitmap(dst, x, 0, dst.height, dst.height)
+            }
+        }
+        if (isRecycle) {
+            if (src != null && !src.isRecycled) {
+                src.recycle()
+            }
+        }
+        return dst
+    }
+
+    /**
+     * 不要在适配器里。对图片进行压缩。适配器反反复复的执行。多次执行。会内存溢出的。切记。
+     *
+     *
+     * 根据宽和比率压缩Bitmap
+     * 这个方法，图片不会变形[取中间的那一部分]
+     *
+     * @param src   原图
+     * @param width 压缩后的宽
+     * @param height 压缩后的高
+     * @param isRecycle 是否释放原图
+     * @return
+     */
+    fun GeomeBitmap(src: Bitmap, width: Float, height: Float, isRecycle: Boolean = true): Bitmap {
+        if (src.width == width.toInt() && src.height == height.toInt()) {
+            return src//防止重复压缩
+        }
+        if (width == height) {
+            //宽和高相等,等比压缩
+            return GeomeBitmap(src, width)
+        } else {
+            var sp = height / width//高的比率
+            var dst: Bitmap? = null
+            val dp = src.height.toFloat() / src.width.toFloat()
+            val pp = Math.abs(sp - dp)
+            if (pp < 0.01) {
+                //fixme Bitmap.createScaledBitmap 如果缩放位图和原有位图大小差异在1%之内，使用的还是同一个位图对象。
+                //fixme 大小差异超过1%左右，使用的就是新的位图，和原位图就没有关系了。
+                dst = Bitmap.createScaledBitmap(src, width.toInt(), (width * sp).toInt(), true)
+            } else {
+                val p = src.width.toFloat() / width
+                val heith = src.height.toFloat() / p
+                dst = Bitmap.createScaledBitmap(src, width.toInt(), heith.toInt(), true)
+                val height = (width * sp).toInt()
+                //要求高，小于压缩后的高。对压缩后的高进行截取
+                if (height < dst!!.height) {
+                    val y = (dst.height - height) / 2
+                    dst = Bitmap.createBitmap(dst, 0, y, dst.width, height)
+                }
+            }
+            if (isRecycle) {
+                if (src != null && !src.isRecycled) {
+                    src.recycle()
+                }
+            }
+            return dst
+        }
+    }
 
     /**
      * fixme 适配x值(默认全屏)，以竖屏为标准。
