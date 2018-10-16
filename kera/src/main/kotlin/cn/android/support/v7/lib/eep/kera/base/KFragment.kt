@@ -115,6 +115,19 @@ abstract open class KFragment(var layout: Int = 0, var content: View? = null) : 
     inline fun ViewManager.ktextView(init: (@AnkoViewDslMarker KRadiusTextView).() -> Unit): KRadiusTextView {
         return ankoView({ ctx: Context -> KRadiusTextView(ctx) }, theme = 0) { init() }
     }
+
+    inline fun ViewManager.kviewPager(init: (@AnkoViewDslMarker KNoScrollViewPager).() -> Unit): KNoScrollViewPager {
+        return ankoView({ ctx: Context -> KNoScrollViewPager(ctx) }, theme = 0) { init() }
+    }
+
+    inline fun ViewManager.kscrollView(init: (@AnkoViewDslMarker KGradientScrollView).() -> Unit): KGradientScrollView {
+        return ankoView({ ctx: Context -> KGradientScrollView(ctx) }, theme = 0) { init() }
+    }
+
+    inline fun ViewManager.kgradientView(init: (@AnkoViewDslMarker KGradientView).() -> Unit): KGradientView {
+        return ankoView({ ctx: Context -> KGradientView(ctx) }, theme = 0) { init() }
+    }
+
     //虚线
     inline fun ViewManager.kdashView(init: (@AnkoViewDslMarker KDashView).() -> Unit): KDashView {
         return ankoView({ ctx: Context -> KDashView(ctx) }, theme = 0) { init() }
@@ -122,14 +135,6 @@ abstract open class KFragment(var layout: Int = 0, var content: View? = null) : 
 
     inline fun ViewManager.kframeView(init: (@AnkoViewDslMarker KFrameView).() -> Unit): KFrameView {
         return ankoView({ ctx: Context -> KFrameView(ctx) }, theme = 0) { init() }
-    }
-
-    inline fun ViewManager.kgradientScrollView(init: (@AnkoViewDslMarker KGradientScrollView).() -> Unit): KGradientScrollView {
-        return ankoView({ ctx: Context -> KGradientScrollView(ctx) }, theme = 0) { init() }
-    }
-
-    inline fun ViewManager.kgradientView(init: (@AnkoViewDslMarker KGradientView).() -> Unit): KGradientView {
-        return ankoView({ ctx: Context -> KGradientView(ctx) }, theme = 0) { init() }
     }
 
     inline fun ViewManager.knumberProgressBar(init: (@AnkoViewDslMarker KNumberProgressBar).() -> Unit): KNumberProgressBar {
@@ -167,10 +172,6 @@ abstract open class KFragment(var layout: Int = 0, var content: View? = null) : 
 
     inline fun ViewManager.kdotsView(init: (@AnkoViewDslMarker KDotsView).() -> Unit): KDotsView {
         return ankoView({ ctx: Context -> KDotsView(ctx) }, theme = 0) { init() }
-    }
-
-    inline fun ViewManager.kviewPager(init: (@AnkoViewDslMarker KNoScrollViewPager).() -> Unit): KNoScrollViewPager {
-        return ankoView({ ctx: Context -> KNoScrollViewPager(ctx) }, theme = 0) { init() }
     }
 
     inline fun ViewManager.ktabLayoutBar(init: (@AnkoViewDslMarker KTabLayoutBar).() -> Unit): KTabLayoutBar {

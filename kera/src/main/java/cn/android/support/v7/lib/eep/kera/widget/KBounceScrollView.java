@@ -6,6 +6,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -41,6 +42,8 @@ public class KBounceScrollView extends NestedScrollView {
 
     public KBounceScrollView(@NonNull Context context) {
         super(context);
+        //fixme 默认，内部容器的宽和高填充ScrollView的宽和高。即一样大小。
+        setFillViewport(true);
     }
 
     /***
