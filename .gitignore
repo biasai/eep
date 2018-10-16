@@ -9,6 +9,7 @@
 /captures
 .externalNativeBuild
 
+/.idea/caches
 
 /myapplication
 /myapplication2
