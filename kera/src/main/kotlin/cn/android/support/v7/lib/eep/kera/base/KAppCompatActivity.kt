@@ -43,9 +43,9 @@ open class KAppCompatActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    //触摸点击效果。
-    open fun onPress(view: View?) {
-        KView.onPress(view)
+    //触摸点击效果。isRipple是否具备波浪效果
+    open fun onPress(view: View?, isRipple: Boolean = true) {
+        KView.onPress(view,isRipple)
     }
 
     //右边滑动的阴影效果。子类可以自定义效果。

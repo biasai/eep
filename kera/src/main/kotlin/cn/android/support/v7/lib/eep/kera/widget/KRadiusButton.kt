@@ -89,9 +89,15 @@ open class KRadiusButton : Button {
     }
 
     //fixme 必须在all_radius等圆角属性设置完成之后再调用。
-    //触摸点击效果。
-    open fun onPress() {
-        selectorRippleDrawable(Color.WHITE, Color.parseColor("#E4E4E4"))
+    //触摸点击效果。默认具备波浪效果
+    open fun onPress(isRipple: Boolean = true) {
+        if (isRipple) {
+            //波浪效果
+            selectorRippleDrawable(Color.WHITE, Color.parseColor("#E4E4E4"))
+        } else {
+            //普通点击效果
+            selectorDrawable(Color.WHITE, Color.parseColor("#E4E4E4"))
+        }
     }
 
     //手机号

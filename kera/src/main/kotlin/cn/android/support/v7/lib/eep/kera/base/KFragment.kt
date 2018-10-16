@@ -26,6 +26,11 @@ import org.jetbrains.anko.custom.ankoView
  */
 abstract open class KFragment(var layout: Int = 0, var content: View? = null) : Fragment() {
 
+    //触摸点击效果。isRipple是否具备波浪效果
+    open fun onPress(view: View?, isRipple: Boolean = true) {
+        KView.onPress(view,isRipple)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         if (layout <= 0) {
             content?.let {

@@ -110,9 +110,9 @@ open class KView : View {
         onClickes.add(onClick)
     }
 
-    //触摸点击效果。
-    open fun onPress() {
-        Companion.onPress(this)
+    //触摸点击效果。默认具备波浪效果
+    open fun onPress(isRipple: Boolean=true) {
+        Companion.onPress(this,isRipple)
     }
 
     var bindView: View? = null//状态绑定的View
@@ -1097,11 +1097,17 @@ open class KView : View {
 
     companion object {
 
-        //默认触摸点击波浪效果。
-        open fun onPress(view: View?) {
+        //默认触摸点击波浪效果。isRipple是否具备波浪效果
+        open fun onPress(view: View?, isRipple: Boolean) {
             view?.apply {
                 //这两个颜色，比较和谐。
-                KSelectorUtils.selectorRippleDrawable(this, Color.WHITE, Color.parseColor("#E4E4E4"))
+                if (isRipple) {
+                    //波浪效果
+                    KSelectorUtils.selectorRippleDrawable(this, Color.WHITE, Color.parseColor("#E4E4E4"))
+                } else {
+                    //平常效果
+                    KSelectorUtils.selectorRippleDrawable(this, Color.parseColor("#ffffff"), Color.parseColor("#E4E4E4"))
+                }
             }
         }
 

@@ -96,9 +96,9 @@ open class KRadiusRelativeLayout : RelativeLayout {
         onClickes.add(onClick)
     }
 
-    //触摸点击效果。
-    open fun onPress() {
-        KView.onPress(this)
+    //触摸点击效果。默认具备波浪效果
+    open fun onPress(isRipple: Boolean=true) {
+        KView.onPress(this,isRipple)
     }
 
     var bindView: View? = null//状态绑定的View
