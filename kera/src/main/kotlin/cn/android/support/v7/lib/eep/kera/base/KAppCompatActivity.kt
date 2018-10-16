@@ -43,9 +43,9 @@ open class KAppCompatActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    //触摸点击效果。
-    open fun onPress(view: View?) {
-        KView.onPress(view)
+    //触摸点击效果。isRipple是否具备波浪效果
+    open fun onPress(view: View?, isRipple: Boolean = true) {
+        KView.onPress(view,isRipple)
     }
 
     //右边滑动的阴影效果。子类可以自定义效果。
@@ -244,6 +244,18 @@ open class KAppCompatActivity : AppCompatActivity() {
         return ankoView({ ctx: Context -> KRadiusTextView(ctx) }, theme = 0) { init() }
     }
 
+    inline fun ViewManager.kviewPager(init: (@AnkoViewDslMarker KNoScrollViewPager).() -> Unit): KNoScrollViewPager {
+        return ankoView({ ctx: Context -> KNoScrollViewPager(ctx) }, theme = 0) { init() }
+    }
+
+    inline fun ViewManager.kscrollView(init: (@AnkoViewDslMarker KGradientScrollView).() -> Unit): KGradientScrollView {
+        return ankoView({ ctx: Context -> KGradientScrollView(ctx) }, theme = 0) { init() }
+    }
+
+    inline fun ViewManager.kgradientView(init: (@AnkoViewDslMarker KGradientView).() -> Unit): KGradientView {
+        return ankoView({ ctx: Context -> KGradientView(ctx) }, theme = 0) { init() }
+    }
+
     //虚线
     inline fun ViewManager.kdashView(init: (@AnkoViewDslMarker KDashView).() -> Unit): KDashView {
         return ankoView({ ctx: Context -> KDashView(ctx) }, theme = 0) { init() }
@@ -251,14 +263,6 @@ open class KAppCompatActivity : AppCompatActivity() {
 
     inline fun ViewManager.kframeView(init: (@AnkoViewDslMarker KFrameView).() -> Unit): KFrameView {
         return ankoView({ ctx: Context -> KFrameView(ctx) }, theme = 0) { init() }
-    }
-
-    inline fun ViewManager.kgradientScrollView(init: (@AnkoViewDslMarker KGradientScrollView).() -> Unit): KGradientScrollView {
-        return ankoView({ ctx: Context -> KGradientScrollView(ctx) }, theme = 0) { init() }
-    }
-
-    inline fun ViewManager.kgradientView(init: (@AnkoViewDslMarker KGradientView).() -> Unit): KGradientView {
-        return ankoView({ ctx: Context -> KGradientView(ctx) }, theme = 0) { init() }
     }
 
     inline fun ViewManager.knumberProgressBar(init: (@AnkoViewDslMarker KNumberProgressBar).() -> Unit): KNumberProgressBar {
@@ -296,10 +300,6 @@ open class KAppCompatActivity : AppCompatActivity() {
 
     inline fun ViewManager.kdotsView(init: (@AnkoViewDslMarker KDotsView).() -> Unit): KDotsView {
         return ankoView({ ctx: Context -> KDotsView(ctx) }, theme = 0) { init() }
-    }
-
-    inline fun ViewManager.kviewPager(init: (@AnkoViewDslMarker KNoScrollViewPager).() -> Unit): KNoScrollViewPager {
-        return ankoView({ ctx: Context -> KNoScrollViewPager(ctx) }, theme = 0) { init() }
     }
 
     inline fun ViewManager.ktabLayoutBar(init: (@AnkoViewDslMarker KTabLayoutBar).() -> Unit): KTabLayoutBar {

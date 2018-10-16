@@ -7,6 +7,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.widget.TextView
 import android.graphics.RectF
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.text.TextUtils
 import android.view.Gravity
@@ -22,6 +23,7 @@ import cn.android.support.v7.lib.eep.kera.https.KBitmaps
 import cn.android.support.v7.lib.eep.kera.utils.KTimerUtils
 import cn.android.support.v7.lib.eep.kera.utils.KSelectorUtils
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
+import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
 
 
@@ -55,6 +57,18 @@ open class KRadiusTextView : TextView {
             left_bottom = typedArray?.getDimension(R.styleable.RoundCornersRect_radian_left_bottom, all_radius)
             right_top = typedArray?.getDimension(R.styleable.RoundCornersRect_radian_right_top, all_radius)
             right_bottom = typedArray?.getDimension(R.styleable.RoundCornersRect_radian_right_bottom, all_radius)
+        }
+    }
+
+    open fun background(resId: Int) {
+        setBackgroundResource(resId)
+    }
+
+    open fun background(bitmap: Bitmap) {
+        if (Build.VERSION.SDK_INT >= 16) {
+            background = BitmapDrawable(bitmap)
+        } else {
+            backgroundDrawable = BitmapDrawable(bitmap)
         }
     }
 
@@ -96,9 +110,9 @@ open class KRadiusTextView : TextView {
         onClickes.add(onClick)
     }
 
-    //触摸点击效果。
-    open fun onPress() {
-        KView.onPress(this)
+    //触摸点击效果。默认具备波浪效果
+    open fun onPress(isRipple: Boolean = true) {
+        KView.onPress(this, isRipple)
     }
 
     var bindView: View? = null//状态绑定的View
@@ -317,14 +331,28 @@ open class KRadiusTextView : TextView {
         }
     }
 
+    //fixme 防止无法获取宽和高，所以延迟100毫秒，这样就能获取控件的宽度和高度了。
+    fun autoUrlBgDelay(url: String?, delay: Long = 100) {
+        if (w <= 0 || h <= 0) {
+            //无法获取宽度和高度，就延迟再获取
+            async {
+                kotlinx.coroutines.experimental.delay(delay)
+                autoUrlBg(url)
+            }
+        } else {
+            autoUrlBg(url)
+        }
+    }
+
     /**
      * url 网络图片地址
      * isLoad 是否显示进度条，默认不显示
      * isRepeat 是否允许重复加载，默认允许
+     * fixme width,height位图的宽和高(最好手动设置一下，或者延迟一下，不能无法获取宽和高)
      */
-    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true) {
+    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true, width: Int = this.w, height: Int = this.h) {
         if (isLoad && context != null && context is Activity) {
-            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).get() {
+            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).width(width).height(height).get() {
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
@@ -333,7 +361,8 @@ open class KRadiusTextView : TextView {
                 }
             }
         } else {
-            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).get() {
+            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).width(width).height(height).get() {
+                //Log.e("test", "成功:\t" + it.width)
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
@@ -565,7 +594,7 @@ open class KRadiusTextView : TextView {
         autoUrlBg?.apply {
             if (!isRecycled) {
                 if (width != w || height != h) {
-                    autoUrlBg = kpx.xBitmap(this, w, h)//位图和控件拉伸到一样大小
+                    autoUrlBg = kpx.xBitmap(this, w, h, isRecycle = false)//位图和控件拉伸到一样大小
                     autoUrlBg?.apply {
                         if (!isRecycled) {
                             canvas.drawBitmap(this, 0f, 0f, paint)
@@ -761,7 +790,7 @@ open class KRadiusTextView : TextView {
     var w: Int = 0//获取控件的真实宽度
         get() {
             var w = width
-            if (layoutParams.width > w) {
+            if (layoutParams != null && layoutParams.width > w) {
                 w = layoutParams.width
             }
             return w
@@ -770,7 +799,7 @@ open class KRadiusTextView : TextView {
     var h: Int = 0//获取控件的真实高度
         get() {
             var h = height
-            if (layoutParams.height > h) {
+            if (layoutParams != null && layoutParams.height > h) {
                 h = layoutParams.height
             }
             return h

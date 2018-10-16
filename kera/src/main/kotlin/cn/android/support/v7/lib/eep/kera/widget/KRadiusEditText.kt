@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.graphics.RectF
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.text.*
@@ -28,6 +29,7 @@ import cn.android.support.v7.lib.eep.kera.utils.KTimerUtils
 import cn.android.support.v7.lib.eep.kera.utils.KSelectorUtils
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
 import cn.android.support.v7.lib.eep.kera.utils.KRegexUtils
+import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
 
 /**
@@ -83,9 +85,21 @@ open class KRadiusEditText : EditText {
         }
     }
 
-    //触摸点击效果。
-    open fun onPress() {
-        KView.onPress(this)
+    open fun background(resId: Int) {
+        setBackgroundResource(resId)
+    }
+
+    open fun background(bitmap: Bitmap) {
+        if (Build.VERSION.SDK_INT >= 16) {
+            background = BitmapDrawable(bitmap)
+        } else {
+            backgroundDrawable = BitmapDrawable(bitmap)
+        }
+    }
+
+    //触摸点击效果。默认具备波浪效果
+    open fun onPress(isRipple: Boolean = true) {
+        KView.onPress(this, isRipple)
     }
 
     var bindView: View? = null//状态绑定的View
@@ -886,14 +900,28 @@ open class KRadiusEditText : EditText {
         }
     }
 
+    //fixme 防止无法获取宽和高，所以延迟100毫秒，这样就能获取控件的宽度和高度了。
+    fun autoUrlBgDelay(url: String?, delay: Long = 100) {
+        if (w <= 0 || h <= 0) {
+            //无法获取宽度和高度，就延迟再获取
+            async {
+                kotlinx.coroutines.experimental.delay(delay)
+                autoUrlBg(url)
+            }
+        } else {
+            autoUrlBg(url)
+        }
+    }
+
     /**
      * url 网络图片地址
      * isLoad 是否显示进度条，默认不显示
      * isRepeat 是否允许重复加载，默认允许
+     * fixme width,height位图的宽和高(最好手动设置一下，或者延迟一下，不能无法获取宽和高)
      */
-    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true) {
+    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true, width: Int = this.w, height: Int = this.h) {
         if (isLoad && context != null && context is Activity) {
-            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).get() {
+            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).width(width).height(height).get() {
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
@@ -902,7 +930,8 @@ open class KRadiusEditText : EditText {
                 }
             }
         } else {
-            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).get() {
+            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).width(width).height(height).get() {
+                //Log.e("test", "成功:\t" + it.width)
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
@@ -1134,7 +1163,7 @@ open class KRadiusEditText : EditText {
         autoUrlBg?.apply {
             if (!isRecycled) {
                 if (width != w || height != h) {
-                    autoUrlBg = kpx.xBitmap(this, w, h)//位图和控件拉伸到一样大小
+                    autoUrlBg = kpx.xBitmap(this, w, h, isRecycle = false)//位图和控件拉伸到一样大小
                     autoUrlBg?.apply {
                         if (!isRecycled) {
                             canvas.drawBitmap(this, 0f, 0f, paint)
@@ -1373,7 +1402,7 @@ open class KRadiusEditText : EditText {
     var w: Int = 0//获取控件的真实宽度
         get() {
             var w = width
-            if (layoutParams.width > w) {
+            if (layoutParams!=null&&layoutParams.width > w) {
                 w = layoutParams.width
             }
             return w
@@ -1382,7 +1411,7 @@ open class KRadiusEditText : EditText {
     var h: Int = 0//获取控件的真实高度
         get() {
             var h = height
-            if (layoutParams.height > h) {
+            if (layoutParams!=null&&layoutParams.height > h) {
                 h = layoutParams.height
             }
             return h

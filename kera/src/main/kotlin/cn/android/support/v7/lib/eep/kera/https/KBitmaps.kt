@@ -67,6 +67,20 @@ open class KBitmaps() {
         return this
     }
 
+    //fixme 指定位图的宽度和高度
+    var width: Int = 0
+    var height: Int = 0
+
+    fun width(width: Int = 0): KBitmaps {
+        this.width = width
+        return this
+    }
+
+    fun height(height: Int = 0): KBitmaps {
+        this.height = height
+        return this
+    }
+
     var circle: Boolean = false//加载在View上面的位图是否为圆形位图。默认不是。
     fun circle(circle: Boolean = true): KBitmaps {
         this.circle = circle
@@ -267,7 +281,7 @@ open class KBitmaps() {
                 //最后执行
                 super.onSuccess(bitmap)
             }
-        }, timeOut = timeOut)
+        }, timeOut = timeOut, width = width, height = height)
     }
 
     //兼容大小写

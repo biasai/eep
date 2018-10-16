@@ -4,6 +4,7 @@ import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import cn.android.support.v7.lib.eep.kera.common.kpx
 import cn.android.support.v7.lib.eep.kera.https.ok.KGenericsCallback
 import cn.android.support.v7.lib.eep.kera.https.ok.KHttps
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
@@ -116,6 +117,7 @@ object KHttp {
             }
         }
     }
+
     fun Post2(url: String?, activity: Activity? = null, requestParams: KHttps?, requestCallBack: KGenericsCallback? = null, timeOut: Int = 3000) {
         url?.let {
             requestParams?.let {
@@ -259,9 +261,21 @@ object KHttp {
         }
     }
 
+    //宽度和高度的标志
+    private fun getWH(w: Int = 0, h: Int = 0): String {
+        //(0就是原图尺寸的标志)
+        if (w <= 0 || h <= 0 || w >= 10000 || h >= 10000) {
+            return "w0" + "h0"
+        } else {
+            return "w" + w.toString() + "h" + h.toString()
+        }
+    }
 
     //Get请求获取网络位图，位图一般都是使用Get
-    fun GetNetBitmap(url: String?, activity: Activity? = null, requestParams: KBitmaps?, requestCallBack: KBitmapCallback? = null, timeOut: Int = 3000) {
+    //width,height获取网络位图的宽度和高度。
+    fun GetNetBitmap(url: String?, activity: Activity? = null, requestParams: KBitmaps?, requestCallBack: KBitmapCallback? = null, timeOut: Int = 3000, width: Int = 0, height: Int = 0) {
+        var w = width
+        var h = height
         url?.let {
             requestParams?.let {
                 if (!it.repeat) {
@@ -273,7 +287,7 @@ object KHttp {
                 }
                 if (it.cacle) {
                     //fixme 读取缓存[网络位图，优先从本地读取]
-                    var bitmap: Bitmap? = KCacheUtils.getInstance().getAsBitmap(it.getUrlUnique(), it.optionsRGB_565);//此次对UtilCache进行优化，内部使用了UtilAssets。优化了位图。
+                    var bitmap: Bitmap? = KCacheUtils.getInstance().getAsBitmap(it.getUrlUnique() + getWH(w, h), it.optionsRGB_565);//此次对UtilCache进行优化，内部使用了UtilAssets。优化了位图。
                     if (bitmap != null && !bitmap.isRecycled) {
                         //fixme 成功
                         activity?.runOnUiThread {
@@ -360,15 +374,24 @@ object KHttp {
                     requestParams?.let {
                         if (it.cacle) {
                             //fixme 存储缓存,顺序调一下。先存储。再回调。防止出错（不会浪费多少时间）。（比如说，回调里面释放了图片。再存储就会报错。）
-                            if (result != null && !result.isRecycled) {
-                                KCacheUtils.getInstance().put(it.getUrlUnique(), result)
+                            result?.let {
+                                if (!it.isRecycled) {
+                                    if (w > 0 && h > 0 && w < 10000 && h < 10000) {
+                                        result = kpx.GeomeBitmap(it, w.toFloat(), h.toFloat(), isRecycle = true)
+                                        //fixme 保存指定宽度和高度位图
+                                        KCacheUtils.getInstance().put(requestParams.getUrlUnique() + getWH(w, h), result)
+                                    } else {
+                                        //fixme 服务器原图，(0就是原图尺寸的标志)
+                                        KCacheUtils.getInstance().put(requestParams.getUrlUnique() + getWH(), result)
+                                    }
+                                }
                             }
                         }
                     }
                     //fixme 成功
                     activity?.runOnUiThread {
-                        requestCallBack?.onSuccess(result)
-                    } ?: requestCallBack?.onSuccess(result)
+                        requestCallBack?.onSuccess(result!!)
+                    } ?: requestCallBack?.onSuccess(result!!)
 
                 } else {
                     //fixme 失败

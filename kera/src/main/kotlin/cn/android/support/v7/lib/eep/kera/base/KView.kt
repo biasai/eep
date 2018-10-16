@@ -4,10 +4,12 @@ import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +26,7 @@ import cn.android.support.v7.lib.eep.kera.R
 import cn.android.support.v7.lib.eep.kera.bean.KRadius
 import cn.android.support.v7.lib.eep.kera.https.KBitmaps
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
+import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.runOnUiThread
@@ -72,6 +75,18 @@ open class KView : View {
         }
     }
 
+    open fun background(resId: Int) {
+        setBackgroundResource(resId)
+    }
+
+    open fun background(bitmap: Bitmap) {
+        if (Build.VERSION.SDK_INT >= 16) {
+            background = BitmapDrawable(bitmap)
+        } else {
+            backgroundDrawable = BitmapDrawable(bitmap)
+        }
+    }
+
     // 两次点击按钮之间的点击间隔不能少于1000毫秒（即1秒）
     var MIN_CLICK_DELAY_TIME = 1000
     var lastClickTime: Long = System.currentTimeMillis()//记录最后一次点击时间
@@ -110,9 +125,9 @@ open class KView : View {
         onClickes.add(onClick)
     }
 
-    //触摸点击效果。
-    open fun onPress() {
-        Companion.onPress(this)
+    //触摸点击效果。默认具备波浪效果
+    open fun onPress(isRipple: Boolean = true) {
+        Companion.onPress(this, isRipple)
     }
 
     var bindView: View? = null//状态绑定的View
@@ -290,14 +305,30 @@ open class KView : View {
         }
     }
 
+    //fixme 防止无法获取宽和高，所以延迟100毫秒，这样就能获取控件的宽度和高度了。
+    //fixme 肉眼对200毫秒内变化是感觉不出来的。
+    fun autoUrlBgDelay(url: String?, delay: Long = 100) {
+        if (w <= 0 || h <= 0) {
+            //无法获取宽度和高度，就延迟再获取
+            async {
+                kotlinx.coroutines.experimental.delay(delay)
+                autoUrlBg(url)
+            }
+        } else {
+            autoUrlBg(url)
+        }
+    }
+
     /**
      * url 网络图片地址
      * isLoad 是否显示进度条，默认不显示
      * isRepeat 是否允许重复加载，默认允许
+     * fixme width,height位图的宽和高(最好手动设置一下，或者延迟一下，不能无法获取宽和高)
      */
-    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true) {
+    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true, width: Int = this.w, height: Int = this.h) {
+        //Log.e("test", "宽度和高度:\t" + width + "\t" + height)
         if (isLoad && context != null && context is Activity) {
-            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).get() {
+            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).width(width).height(height).get() {
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
@@ -306,7 +337,8 @@ open class KView : View {
                 }
             }
         } else {
-            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).get() {
+            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).width(width).height(height).get() {
+                //Log.e("test", "成功:\t" + it.width)
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
@@ -534,11 +566,12 @@ open class KView : View {
             return
         }
         var paint = KView.getPaint()
+        //Log.e("test", "网络位图:\t" + autoUrlBg?.width + "\t" + autoUrlBg?.isRecycled)
         //网络背景位图（铺满整个背景控件）
         autoUrlBg?.apply {
             if (!isRecycled) {
                 if (width != w || height != h) {
-                    autoUrlBg = kpx.xBitmap(this, w, h)//位图和控件拉伸到一样大小
+                    autoUrlBg = kpx.xBitmap(this, w, h, false)//位图和控件拉伸到一样大小
                     autoUrlBg?.apply {
                         if (!isRecycled) {
                             canvas.drawBitmap(this, 0f, 0f, paint)
@@ -719,7 +752,7 @@ open class KView : View {
     var w: Int = 0//获取控件的真实宽度
         get() {
             var w = width
-            if (layoutParams.width > w) {
+            if (layoutParams != null && layoutParams.width > w) {
                 w = layoutParams.width
             }
             return w
@@ -728,7 +761,7 @@ open class KView : View {
     var h: Int = 0//获取控件的真实高度
         get() {
             var h = height
-            if (layoutParams.height > h) {
+            if (layoutParams != null && layoutParams.height > h) {
                 h = layoutParams.height
             }
             return h
@@ -1097,11 +1130,17 @@ open class KView : View {
 
     companion object {
 
-        //默认触摸点击波浪效果。
-        open fun onPress(view: View?) {
+        //默认触摸点击波浪效果。isRipple是否具备波浪效果
+        open fun onPress(view: View?, isRipple: Boolean) {
             view?.apply {
                 //这两个颜色，比较和谐。
-                KSelectorUtils.selectorRippleDrawable(this, Color.WHITE, Color.parseColor("#E4E4E4"))
+                if (isRipple) {
+                    //波浪效果
+                    KSelectorUtils.selectorRippleDrawable(this, Color.WHITE, Color.parseColor("#E4E4E4"))
+                } else {
+                    //平常效果
+                    KSelectorUtils.selectorRippleDrawable(this, Color.parseColor("#ffffff"), Color.parseColor("#E4E4E4"))
+                }
             }
         }
 

@@ -2,10 +2,14 @@ package cn.android.support.v7.lib.eep.kera.widget
 
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.BitmapDrawable
+import android.os.Build
 import android.util.AttributeSet
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import cn.android.support.v7.lib.eep.kera.widget.KBounceScrollView
+import org.jetbrains.anko.backgroundDrawable
 
 /**
  * 背景颜色渐变的弹性ScrollView
@@ -30,6 +34,18 @@ open class KGradientScrollView : KBounceScrollView {
 
     init {
         setLayerType(View.LAYER_TYPE_HARDWARE, null)
+    }
+
+    open fun background(resId: Int) {
+        setBackgroundResource(resId)
+    }
+
+    open fun background(bitmap: Bitmap) {
+        if (Build.VERSION.SDK_INT >= 16) {
+            background = BitmapDrawable(bitmap)
+        } else {
+            backgroundDrawable = BitmapDrawable(bitmap)
+        }
     }
 
     //fixme 水平渐变颜色数组值【均匀渐变】
