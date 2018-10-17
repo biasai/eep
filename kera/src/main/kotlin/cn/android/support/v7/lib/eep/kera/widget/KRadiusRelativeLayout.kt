@@ -950,6 +950,56 @@ open class KRadiusRelativeLayout : RelativeLayout {
         }
     }
 
+    var realWidth = -1//保存控件的实际宽度
+    var isShowWidth = true//true展开状态，false关闭状态
+        get() {
+            if (realWidth > 0) {
+                if (w > realWidth / 2) {
+                    return true//展开状态
+                } else {
+                    return false//关闭状态
+                }
+            } else {
+                if (w > 0) {
+                    return true//展开状态
+                } else {
+                    return false//关闭状态
+                }
+            }
+        }
+
+    //要显示的宽度（控制宽度的变化）
+    fun showWidth(mWidth: Int, duration: Long = 300) {
+        if (realWidth < 0 && w > 0) {
+            realWidth = w//保存实际原有宽度
+        }
+        if (realWidth > 0) {
+            //属性动画，随便搞个属性即可。不存在也没关系。仅仅需要这个属性值的变化过程
+            ofInt("mmmShowWidth", 0, duration, w, mWidth) {
+                layoutParams.apply {
+                    //设置宽和高
+                    width = it
+                }
+                requestLayout()
+            }
+        }
+    }
+
+    //宽度变化，0->h 或者 h->0 自主判断
+    fun showToggleWidth(duration: Long = 300) {
+        if (realWidth < 0 && w > 0) {
+            realWidth = w//保存实际原有宽度
+        }
+        if (realWidth > 0) {
+            if (isShowWidth) {
+                //显示状态 改为 关闭状态，宽度设置为0
+                showWidth(0, duration)
+            } else {
+                //关闭状态 改为 显示状态，宽度设置为原有宽度
+                showWidth(realWidth, duration)
+            }
+        }
+    }
 
     //透明动画,透明度 0f(完全透明)到1f(完全不透明)
     fun alpha(repeatCount: Int, duration: Long, vararg value: Float, AnimatorUpdateListener: ((values: Float) -> Unit)? = null): ObjectAnimator {
