@@ -33,6 +33,11 @@ abstract class KDialog(open var act: Activity?, open var layoutId: Int = 0, open
         return null
     }
 
+    //触摸点击效果。isRipple是否具备波浪效果
+    open fun onPress(view: View?, isRipple: Boolean = true) {
+        KView.onPress(view,isRipple)
+    }
+
     //fixme 手动设置状态栏字体颜色(true黑色(深色，默认)，false白色(浅色)。)[亲测有效]
     fun isDarkmode(isDarkmode: Boolean = KApplication.getInstance().darkmode): KDialog {
         KApplication.getInstance().setStatusBarDrak(dialog!!.window, isDarkmode)

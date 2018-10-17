@@ -40,7 +40,7 @@ abstract class KMoreOnScrollListener : RecyclerView.OnScrollListener {
     // RecyclerView.SCROLL_STATE_IDLE=0闲置，没有滑动。结束滚动。
     override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
         super.onScrollStateChanged(recyclerView, newState)
-        Log.e("test", "onScrollStateChanged()\tnewState:\t$newState")
+        //Log.e("test", "onScrollStateChanged()\tnewState:\t$newState")
         if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
             isDragging = true
         }
