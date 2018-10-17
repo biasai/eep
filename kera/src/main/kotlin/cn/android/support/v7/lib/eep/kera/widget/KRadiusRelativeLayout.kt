@@ -730,7 +730,7 @@ open class KRadiusRelativeLayout : RelativeLayout {
     var w: Int = 0//获取控件的真实宽度
         get() {
             var w = width
-            if (layoutParams!=null&&layoutParams.width > w) {
+            if (layoutParams != null && layoutParams.width > w) {
                 w = layoutParams.width
             }
             return w
@@ -739,7 +739,7 @@ open class KRadiusRelativeLayout : RelativeLayout {
     var h: Int = 0//获取控件的真实高度
         get() {
             var h = height
-            if (layoutParams!=null&&layoutParams.height > h) {
+            if (layoutParams != null && layoutParams.height > h) {
                 h = layoutParams.height
             }
             return h
@@ -898,6 +898,22 @@ open class KRadiusRelativeLayout : RelativeLayout {
         objectAnimates.add(objectAnimator)
         return objectAnimator
     }
+
+    private var mShowHeight = -1//要显示的高度，即控制控件的实际高度
+    //要显示的高度
+    fun showHeight(mh: Int, duration: Long = 300) {
+        if (mShowHeight < 0) {
+            mShowHeight = h
+        }
+        ofInt("mShowHeight", 0, duration, mShowHeight, mh) {
+            layoutParams.apply {
+                //设置宽和高
+                height = it
+            }
+            requestLayout()
+        }
+    }
+
 
     //透明动画,透明度 0f(完全透明)到1f(完全不透明)
     fun alpha(repeatCount: Int, duration: Long, vararg value: Float, AnimatorUpdateListener: ((values: Float) -> Unit)? = null): ObjectAnimator {
