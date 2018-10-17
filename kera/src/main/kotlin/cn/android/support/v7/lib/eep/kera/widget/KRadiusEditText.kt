@@ -1564,6 +1564,58 @@ open class KRadiusEditText : EditText {
         return objectAnimator
     }
 
+    var realHeight = -1//保存控件的实际高度
+    var isShowHeight = true//true展开状态，false关闭状态
+        get() {
+            if (realHeight > 0) {
+                if (h > realHeight / 2) {
+                    return true//展开状态
+                } else {
+                    return false//关闭状态
+                }
+            } else {
+                if (h > 0) {
+                    return true//展开状态
+                } else {
+                    return false//关闭状态
+                }
+            }
+        }
+
+    //要显示的高度（控制高度的变化）
+    fun showHeight(mHeight: Int, duration: Long = 300) {
+        if (realHeight < 0 && h > 0) {
+            realHeight = h//保存实际原有高度
+        }
+        if (realHeight > 0) {
+            //属性动画，随便搞个属性即可。不存在也没关系。仅仅需要这个属性值的变化过程
+            ofInt("mmmShowHeight", 0, duration, h, mHeight) {
+                layoutParams.apply {
+                    //设置宽和高
+                    height = it
+                }
+                requestLayout()
+            }
+        }
+    }
+
+    //高度变化，0->h 或者 h->0 自主判断
+    fun showToggleHeight(duration: Long = 300) {
+        if (realHeight < 0 && h > 0) {
+            realHeight = h//保存实际原有高度
+        }
+        if (realHeight > 0) {
+            if (isShowHeight) {
+                //显示状态 改为 关闭状态，高度设置为0
+                showHeight(0, duration)
+            } else {
+                //关闭状态 改为 显示状态，高度设置为原有高度
+                showHeight(realHeight, duration)
+            }
+        }
+    }
+
+
     //透明动画,透明度 0f(完全透明)到1f(完全不透明)
     fun alpha(repeatCount: Int, duration: Long, vararg value: Float, AnimatorUpdateListener: ((values: Float) -> Unit)? = null): ObjectAnimator {
         return ofFloat("alpha", repeatCount, duration, *value, AnimatorUpdateListener = AnimatorUpdateListener)
