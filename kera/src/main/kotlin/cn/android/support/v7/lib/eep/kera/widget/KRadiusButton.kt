@@ -29,10 +29,7 @@ import cn.android.support.v7.lib.eep.kera.utils.KSelectorUtils
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
 import cn.android.support.v7.lib.eep.kera.utils.KRegexUtils
 import kotlinx.coroutines.experimental.async
-import org.jetbrains.anko.backgroundColor
-import org.jetbrains.anko.backgroundDrawable
-import org.jetbrains.anko.runOnUiThread
-import org.jetbrains.anko.textColor
+import org.jetbrains.anko.*
 import java.util.regex.Pattern
 
 //            使用案例
@@ -666,6 +663,7 @@ open class KRadiusButton : Button {
         textSize = kpx.textSizeX(30f)
         textColor = Color.WHITE
         gravity = Gravity.CENTER
+        padding = 0//内补丁设置为0。防止他脑抽
     }
 
     /**
@@ -1184,7 +1182,7 @@ open class KRadiusButton : Button {
     var w: Int = 0//获取控件的真实宽度
         get() {
             var w = width
-            if (layoutParams!=null&&layoutParams.width > w) {
+            if (layoutParams != null && layoutParams.width > w) {
                 w = layoutParams.width
             }
             return w
@@ -1193,7 +1191,7 @@ open class KRadiusButton : Button {
     var h: Int = 0//获取控件的真实高度
         get() {
             var h = height
-            if (layoutParams!=null&&layoutParams.height > h) {
+            if (layoutParams != null && layoutParams.height > h) {
                 h = layoutParams.height
             }
             return h
