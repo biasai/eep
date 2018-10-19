@@ -75,6 +75,15 @@ open class KView : View {
         }
     }
 
+    //清除背景
+    open fun clearBackground(){
+        clearOriBackground()
+    }
+
+    open fun background(mcolor: String) {
+        setBackgroundColor(Color.parseColor(mcolor))
+    }
+
     open fun background(resId: Int) {
         setBackgroundResource(resId)
     }
