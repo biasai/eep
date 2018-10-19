@@ -392,19 +392,39 @@ object KSelectorUtils {
      * PressColor  按下时字体颜色值
      * SelectColor 选中(默认和按下相同)字体颜色值
      */
-    fun selectorTextColor(view: View, NormalColor: Int, PressColor: Int, SelectColor: Int = PressColor) {
-        val colors = intArrayOf(PressColor, SelectColor, SelectColor, NormalColor)
-        val states = arrayOfNulls<IntArray>(4)
-        //fixme 以下顺序很重要。特别是最后一个，普通效果。必须放在最后一个，不然可能没有效果。
-        states[0] = intArrayOf(android.R.attr.state_pressed)//按下
-        states[1] = intArrayOf(android.R.attr.state_checked)//选中
-        states[2] = intArrayOf(android.R.attr.state_selected)//选中
-        states[3] = intArrayOf(-android.R.attr.state_checked)//未选中，未按下，普通一般效果
-        val colorStateList = ColorStateList(states, colors)
-        view.isClickable = true//具体点击能力
-        if (view is TextView) {
-            view.setTextColor(colorStateList)
+    fun selectorTextColor(view: View, NormalColor: Int, PressColor: Int?, SelectColor: Int? = PressColor) {
+        if (PressColor != null && SelectColor != null) {
+            val colors = intArrayOf(PressColor, SelectColor, SelectColor, NormalColor)
+            val states = arrayOfNulls<IntArray>(4)
+            //fixme 以下顺序很重要。特别是最后一个，普通效果。必须放在最后一个，不然可能没有效果。
+            states[0] = intArrayOf(android.R.attr.state_pressed)//按下
+            states[1] = intArrayOf(android.R.attr.state_checked)//选中
+            states[2] = intArrayOf(android.R.attr.state_selected)//选中
+            states[3] = intArrayOf(-android.R.attr.state_checked)//未选中，未按下，普通一般效果
+            val colorStateList = ColorStateList(states, colors)
+            view.isClickable = true//具体点击能力
+            if (view is TextView) {
+                view.setTextColor(colorStateList)
+            }
+        } else if (PressColor == null) {
+            //触摸状态为空（防止与选中状态冲突）
+            var mSelectColor = SelectColor
+            if (mSelectColor == null) {
+                mSelectColor = NormalColor
+            }
+            val colors = intArrayOf(mSelectColor, mSelectColor, NormalColor)
+            val states = arrayOfNulls<IntArray>(3)
+            //fixme 以下顺序很重要。特别是最后一个，普通效果。必须放在最后一个，不然可能没有效果。
+            states[0] = intArrayOf(android.R.attr.state_checked)//选中
+            states[1] = intArrayOf(android.R.attr.state_selected)//选中
+            states[2] = intArrayOf(-android.R.attr.state_checked)//未选中，未按下，普通一般效果
+            val colorStateList = ColorStateList(states, colors)
+            view.isClickable = true//具体点击能力
+            if (view is TextView) {
+                view.setTextColor(colorStateList)
+            }
         }
+
     }
 
     /**
@@ -412,19 +432,17 @@ object KSelectorUtils {
      * PressColor  按下时颜色值
      * SelectColor 选中(默认和按下时相同)  字体颜色值
      */
-    fun selectorTextColor(view: View, NormalColor: String, PressColor: String, SelectColor: String = PressColor) {
-        val colors = intArrayOf(Color.parseColor(PressColor), Color.parseColor(SelectColor), Color.parseColor(SelectColor), Color.parseColor(NormalColor))
-        val states = arrayOfNulls<IntArray>(4)
-        //fixme 以下顺序很重要。特别是最后一个，普通效果。必须放在最后一个，不然可能没有效果。
-        states[0] = intArrayOf(android.R.attr.state_pressed)//按下
-        states[1] = intArrayOf(android.R.attr.state_checked)//选中
-        states[2] = intArrayOf(android.R.attr.state_selected)//选中
-        states[3] = intArrayOf(-android.R.attr.state_checked)//未选中，未按下，普通一般效果
-        val colorStateList = ColorStateList(states, colors)
-        view.isClickable = true//具体点击能力
-        if (view is TextView) {
-            view.setTextColor(colorStateList)
+    fun selectorTextColor(view: View, NormalColor: String, PressColor: String?, SelectColor: String? = PressColor) {
+        if (PressColor != null && SelectColor != null) {
+            selectorTextColor(view, Color.parseColor(NormalColor), Color.parseColor(PressColor), Color.parseColor(SelectColor))
+        } else if (PressColor == null) {
+            var mSelectColor = SelectColor
+            if (mSelectColor == null) {
+                mSelectColor = NormalColor
+            }
+            selectorTextColor(view, Color.parseColor(NormalColor), null, Color.parseColor(mSelectColor))
         }
+
     }
 
 }

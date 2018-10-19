@@ -1278,11 +1278,11 @@ open class KRadiusButton : Button {
     }
 
     //字体颜色
-    fun selectorTextColor(NormalColor: Int, PressColor: Int, SelectColor: Int = PressColor) {
+    fun selectorTextColor(NormalColor: Int, PressColor: Int?, SelectColor: Int? = PressColor) {
         KSelectorUtils.selectorTextColor(this, NormalColor, PressColor, SelectColor)
     }
 
-    fun selectorTextColor(NormalColor: String, PressColor: String, SelectColor: String = PressColor) {
+    fun selectorTextColor(NormalColor: String, PressColor: String?, SelectColor: String? = PressColor) {
         KSelectorUtils.selectorTextColor(this, NormalColor, PressColor, SelectColor)
     }
 
