@@ -29,6 +29,7 @@ import org.jetbrains.anko.*
 
 /**
  * 自定义圆角文本宽
+ * 具备背景颜色渐变
  * Created by 彭治铭 on 2018/5/20.
  */
 open class KRadiusTextView : TextView {
@@ -61,7 +62,7 @@ open class KRadiusTextView : TextView {
     }
 
     //清除背景
-    open fun clearBackground(){
+    open fun clearBackground() {
         clearOriBackground()
     }
 

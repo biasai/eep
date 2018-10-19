@@ -1279,7 +1279,7 @@ open class KRadiusEditText : EditText {
         }
         //画自定义背景(在super的后面，不然会遮挡文字)
         canvas?.let {
-            drawAutoBg(it)
+            drawAutoBg(it)//画自定义背景位图
         }
         super.draw(canvas)
 

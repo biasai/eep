@@ -2,9 +2,12 @@ package cn.android.support.v7.lib.eep.kera.widget
 
 import android.content.Context
 import android.graphics.*
+import android.os.Build
+import android.support.annotation.RequiresApi
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import cn.android.support.v7.lib.eep.kera.R
 import cn.android.support.v7.lib.eep.kera.common.kpx
 
@@ -12,7 +15,7 @@ import cn.android.support.v7.lib.eep.kera.common.kpx
  * 阴影矩形
  * Created by 彭治铭 on 2018/7/1.
  */
-open class KShadowRectView : View {
+open class KShadowView : View {
 
     constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
         setLayerType(View.LAYER_TYPE_SOFTWARE, null)//必须关闭硬件加速，不支持
@@ -76,8 +79,8 @@ open class KShadowRectView : View {
             var paint = Paint()
             paint.isDither = true
             paint.isAntiAlias = true
-            paint.strokeWidth = 0f
-            paint.style = Paint.Style.FILL
+            paint.strokeWidth = 100f
+            paint.style = Paint.Style.STROKE
             paint.color = bg_color
             paint.setShadowLayer(shadow_radius, shadow_dx, shadow_dy, shadow_color)
             // 矩形弧度
@@ -97,7 +100,7 @@ open class KShadowRectView : View {
                 paint.isAntiAlias = true
                 paint.isDither = true
                 paint.style = Paint.Style.FILL_AND_STROKE
-                paint.strokeWidth=0f
+                paint.strokeWidth = 0f
                 it(canvas, paint)
             }
         }
@@ -107,7 +110,7 @@ open class KShadowRectView : View {
     open var draw: ((canvas: Canvas, paint: Paint) -> Unit)? = null
 
     //自定义，重新绘图
-    open fun draw(draw: ((canvas: Canvas, paint: Paint) -> Unit)? = null): KShadowRectView {
+    open fun draw(draw: ((canvas: Canvas, paint: Paint) -> Unit)? = null): KShadowView {
         this.draw = draw
         postInvalidate()//刷新
         return this
@@ -117,7 +120,7 @@ open class KShadowRectView : View {
     var onDraw: ((canvas: Canvas, paint: Paint) -> Unit)? = null
 
     //画自己
-    fun onDraw_(onDraw: ((canvas: Canvas, paint: Paint) -> Unit)? = null): KShadowRectView {
+    fun onDraw_(onDraw: ((canvas: Canvas, paint: Paint) -> Unit)? = null): KShadowView {
         this.onDraw = onDraw
         postInvalidate()//刷新
         return this
@@ -131,7 +134,7 @@ open class KShadowRectView : View {
                 paint.isAntiAlias = true
                 paint.isDither = true
                 paint.style = Paint.Style.FILL_AND_STROKE
-                paint.strokeWidth=0f
+                paint.strokeWidth = 0f
                 it(canvas, paint)
             }
         }
