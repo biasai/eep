@@ -45,7 +45,7 @@ open class KAppCompatActivity : AppCompatActivity() {
 
     //触摸点击效果。isRipple是否具备波浪效果
     open fun onPress(view: View?, isRipple: Boolean = true) {
-        KView.onPress(view,isRipple)
+        KView.onPress(view, isRipple)
     }
 
     //右边滑动的阴影效果。子类可以自定义效果。
@@ -271,6 +271,11 @@ open class KAppCompatActivity : AppCompatActivity() {
 
     inline fun ViewManager.kshadowRectView(init: (@AnkoViewDslMarker KShadowRectView).() -> Unit): KShadowRectView {
         return ankoView({ ctx: Context -> KShadowRectView(ctx) }, theme = 0) { init() }
+    }
+
+    //阴影
+    inline fun ViewManager.kshadowView(init: (@AnkoViewDslMarker KShadowView).() -> Unit): KShadowView {
+        return ankoView({ ctx: Context -> KShadowView(ctx) }, theme = 0) { init() }
     }
 
     inline fun ViewManager.ktriangleView(init: (@AnkoViewDslMarker KTriangleView).() -> Unit): KTriangleView {

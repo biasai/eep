@@ -150,6 +150,11 @@ abstract open class KFragment(var layout: Int = 0, var content: View? = null) : 
         return ankoView({ ctx: Context -> KShadowRectView(ctx) }, theme = 0) { init() }
     }
 
+    //阴影
+    inline fun ViewManager.kshadowView(init: (@AnkoViewDslMarker KShadowView).() -> Unit): KShadowView {
+        return ankoView({ ctx: Context -> KShadowView(ctx) }, theme = 0) { init() }
+    }
+
     inline fun ViewManager.ktriangleView(init: (@AnkoViewDslMarker KTriangleView).() -> Unit): KTriangleView {
         return ankoView({ ctx: Context -> KTriangleView(ctx) }, theme = 0) { init() }
     }
