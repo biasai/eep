@@ -9,7 +9,8 @@ import android.widget.TextView
 import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
-import android.text.TextUtils
+import android.support.v4.app.INotificationSideChannel
+import android.text.*
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -251,24 +252,234 @@ open class KRadiusTextView : TextView {
     /**
      * 中间内容带符号，如星号*
      * content 文本内容
-     * num 符号个数
+     * symbolNum 符号个数
      * symbol 符号
+     * symbolStar 符号开始的位置
+     * frontNum 前半部分，添加想间隙。
+     * behindNum 后半部分添加的间隙。
      */
-    fun content(content: String?, num: Int = 4, symbol: String = "*") {
+    fun content(content: String?, symbolNum: Int = 4, symbol: String = "*", symbolStar: Int? = null, frontNum: Int? = null, behindNum: Int? = null) {
         content?.let {
-            if (it.trim().length >= num && num > 0) {
+            if (it.trim().length >= symbolNum && symbolNum > 0) {
                 this.content = it//保存真实内容
-                var length = content.length - num
+                var length = content.length - symbolNum
                 var i = Math.floor(length / 2.0).toInt()//floor是取小，所以头部是小于尾部的。
+                if (symbolStar != null && symbolStar >= 0) {
+                    i = symbolStar
+                }
                 var front = it.substring(0, i)
-                var behind = it.substring(i + num)
+                var behind = it.substring(i + symbolNum)
                 var sym = ""
-                for (i in 1..num) {
-                    sym = sym + symbol
+                for (i in 1..symbolNum) {
+                    sym = sym + symbol//星号
+                }
+                //前面部分，添加的间隙
+                frontNum?.let {
+                    if (it >= 1) {
+                        for (i in 1..it) {
+                            front += "\u0020"
+                        }
+                    }
+                }
+                //后半部分，添加的间隙
+                behindNum?.let {
+                    if (it >= 1) {
+                        for (i in 1..it) {
+                            behind = "\u0020" + behind
+                        }
+                    }
                 }
                 text = front + sym.trim() + behind
             }
         }
+    }
+
+    var symb: String? = "￥"//人民币符号
+    var symb2: String? = ","//逗号，3位数一个逗号。即一千。
+    //金钱类型，Long类型
+    fun money(symb: String? = "￥", symb2: String? = ",") {
+        gravity = Gravity.CENTER
+        inputType = InputType.TYPE_CLASS_NUMBER//数字类型，只能输入数字，但是可以代码设置中文和其他符合。
+        //var symb: String? = "￥"//人民币符号
+        //var symb2: String? = ","//逗号，3位数一个逗号。即一千。
+        this.symb = symb
+        this.symb2 = symb2
+        addTextWatcher {
+            setMoney(it)
+        }
+    }
+
+    //获取金额
+    fun getMoney(): Long? {
+        var str: String = text.toString()//去除符号的文本
+        if (symb != null && symb!!.trim().length > 0) {
+            str = str?.replace(symb!!, "")?.trim()//fixme 去除符号1
+            for (i in 0..symb!!.lastIndex) {
+                str = str?.replace(symb!![i].toString(), "")?.trim()
+            }
+        }
+        if (symb2 != null && symb2!!.trim().length > 0) {
+            str = str.replace(symb2!!, "").trim()//fixme 去除符号2
+            for (i in 0..symb2!!.lastIndex) {
+                str = str?.replace(symb2!![i].toString(), "")?.trim()
+            }
+        }
+        if (str.trim().length <= 0) {
+            return null
+        } else {
+            return str.toLong()
+        }
+    }
+
+    //设置金额
+    fun setMoney(cmoney: Long) {
+        var m = cmoney
+        if (m < minMoney) {
+            m = minMoney
+        }
+        if (m > maxMoney) {
+            m = maxMoney
+        }
+        setMoney(m.toString())
+    }
+
+    fun setMoney(cmoney: String) {
+        var str: String = cmoney
+        //符号1
+        if (symb != null && symb!!.trim().length > 0) {
+            str = str?.replace(symb!!, "")?.trim()//fixme 去除符号1
+            for (i in 0..symb!!.lastIndex) {
+                str = str?.replace(symb!![i].toString(), "")?.trim()
+            }
+        }
+        var count = 4
+        if (symb2 != null && symb2!!.length > 0) {
+            if (!str.contains(symb2!!)) {
+                count = 3
+            }
+        }
+        //符号2
+        if (str != null && str.length > count && symb2 != null && symb2!!.trim().length > 0) {
+            str = str.replace(symb2!!, "").trim()//fixme 去除符号2
+            for (i in 0..symb2!!.lastIndex) {
+                str = str?.replace(symb2!![i].toString(), "")?.trim()
+            }
+            str = str.toLong().toString()//fixme 转换成合格的Long类型。
+            var str2: String? = ""
+            if (str.length > 3) {
+                var str3 = str.reversed()//数据反转
+                for (i in 0 until str3.length) {
+                    if (str3[i] != null) {
+                        str2 = str3[i].toString() + str2
+                        if ((i + 1) % 3 == 0 && i != str.length - 1) {
+                            str2 = symb2 + str2//fixme 加上符号2
+                        }
+                    }
+                }
+            }else{
+                str2=str
+            }
+            str2 = symb + str2//fixme 加上符号1
+            str2 = str2.replace("null", "").trim()
+            //text.toString() 很重要，必须要手动转换成String类型。
+            if (!text.toString().trim().equals(str2.trim())) {
+                setText(str2.trim())
+                //setSelection(length())//光标
+            }
+        } else if (str != null && str.length > 0 && symb2 != null && symb2!!.trim().length > 0) {
+            str = str.replace(symb2!!, "").trim()//fixme 去除符号2
+            for (i in 0..symb2!!.lastIndex) {
+                str = str?.replace(symb2!![i].toString(), "")?.trim()
+            }
+            str = str.toLong().toString()//fixme 转换成合格的Long类型。
+            str = symb + str//fixme 加上符号1
+            if (!text.toString().trim().equals(str.trim())) {
+                setText(str.trim())
+                //setSelection(length())//光标
+            }
+        }
+        getMoney()?.let {
+            //最大值
+            if (it > maxMoney) {
+                setMoney(maxMoney.toString())
+            }
+            //最小值
+            if (it < minMoney) {
+                setMoney(minMoney.toString())
+            }
+        }
+
+    }
+
+    var maxMoney = Long.MAX_VALUE//最大金额
+        set(value) {
+            field = value
+            var l = value.toString().length
+            if (l > 0) {
+                if (symb != null && symb!!.length > 0) {
+                    if (symb2 != null && symb2!!.length > 0) {
+                        setMaxLength(l + (l / 3) * symb2!!.length + symb!!.length)//设置最大金额的同时设置最长个数。
+                    } else {
+                        setMaxLength(l + symb!!.length)//设置最大金额的同时设置最长个数。
+                    }
+                } else {
+                    if (symb2 != null && symb2!!.length > 0) {
+                        setMaxLength(l + (l / 3) * symb2!!.length)
+                    } else {
+                        setMaxLength(l)
+                    }
+                }
+            }
+        }
+
+    //添加金额
+    fun addMoney(money: Long) {
+        var cmoney = money
+        getMoney()?.let {
+            cmoney = it + money
+        }
+        if (cmoney > maxMoney) {
+            cmoney = maxMoney
+        }
+        setText(cmoney.toString())
+    }
+
+    var minMoney = 0L//最少金额
+    //减少金额
+    fun subMoney(money: Long) {
+        var m = money
+        getMoney()?.let {
+            m = it - money
+        }
+        if (m < minMoney) {
+            m = minMoney
+        }
+        setText(m.toString())
+    }
+
+    /**
+     * fixme 设置最大输入个数。即最大文字个数。
+     * setMaxLines(lines) 设置行数
+     */
+    fun setMaxLength(num: Int) {
+        filters = arrayOf<InputFilter>(InputFilter.LengthFilter(num)) //最大输入长度，网易的是6-18个字符
+    }
+
+    //文本监听
+    fun addTextWatcher(watcher: (text: String) -> Unit) {
+        addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                s?.let {
+                    //watcher(it.toString())//""空字符串也会监听返回。
+                    var mText = text.toString()//it靠不住，text获取的才是实时的正确数据。
+                    watcher(mText)
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
     }
 
     init {

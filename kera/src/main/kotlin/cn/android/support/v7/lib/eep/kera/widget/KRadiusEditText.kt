@@ -489,72 +489,30 @@ open class KRadiusEditText : EditText {
         this.symb = symb
         this.symb2 = symb2
         addTextWatcher {
-            var str: String? = text.toString()//去除符号的文本
-            //符号1
-            if (symb != null && symb.trim().length > 0) {
-                str = str?.replace(symb, "")?.trim()//fixme 去除符号1
-                if (it.contains(symb)) {
-                    //有符号
-                    if (it.length <= 1) {
-                        setText(null)//只有符号，没有数字时，清除掉符号。
-                    }
-                } else if (!it.contains(symb) && it.length > 0) {
-                    //加上符号
-                    setText(symb + it)
-                    setSelection(length())//光标
-                }
-            }
-            var count = 4
-            if (symb2 != null && symb2.length > 0) {
-                if (!text.toString().contains(symb2)) {
-                    count = 3
-                }
-            }
-            //符号2
-            if (str != null && str.length > count && symb2 != null && symb2.trim().length > 0) {
-                str = str.replace(symb2, "").trim()//fixme 去除符号2
-                str = str.toLong().toString()//fixme 转换成合格的Long类型。
-                var str2: String? = ""
-                if (str.length > 3) {
-                    var str3 = str.reversed()//数据反转
-                    for (i in 0 until str3.length) {
-                        if (str3[i] != null) {
-                            str2 = str3[i].toString() + str2
-                            if ((i + 1) % 3 == 0 && i != str.length - 1) {
-                                str2 = symb2 + str2//fixme 加上符号2
-                            }
-                        }
-                    }
-                }
-                str2 = symb + str2//fixme 加上符号1
-                str2 = str2.replace("null", "").trim()
-                //text.toString() 很重要，必须要手动转换成String类型。
-                if (!text.toString().trim().equals(str2.trim())) {
-                    setText(str2.trim())
-                    setSelection(length())//光标
-                }
-            } else if (str != null && str.length > 0 && symb2 != null && symb2.trim().length > 0) {
-                str = str.replace(symb2, "").trim()//fixme 去除符号2
-                str = str.toLong().toString()//fixme 转换成合格的Long类型。
-                str = symb + str//fixme 加上符号1
-                if (!text.toString().trim().equals(str.trim())) {
-                    setText(str.trim())
-                    setSelection(length())//光标
-                }
-            }
+            setMoney(it)
         }
     }
 
     //获取金额
-    fun getMoney(): Int {
+    fun getMoney(): Long? {
         var str: String = text.toString()//去除符号的文本
         if (symb != null && symb!!.trim().length > 0) {
             str = str?.replace(symb!!, "")?.trim()//fixme 去除符号1
+            for (i in 0..symb!!.lastIndex) {
+                str = str?.replace(symb!![i].toString(), "")?.trim()
+            }
         }
         if (symb2 != null && symb2!!.trim().length > 0) {
             str = str.replace(symb2!!, "").trim()//fixme 去除符号2
+            for (i in 0..symb2!!.lastIndex) {
+                str = str?.replace(symb2!![i].toString(), "")?.trim()
+            }
         }
-        return str.toInt()
+        if (str.trim().length <= 0) {
+            return null
+        } else {
+            return str.toLong()
+        }
     }
 
     //设置金额
@@ -566,13 +524,104 @@ open class KRadiusEditText : EditText {
         if (m > maxMoney) {
             m = maxMoney
         }
-        setText(m.toString())
+        setMoney(m.toString())
+    }
+
+    fun setMoney(cmoney: String) {
+        var str: String = cmoney
+        //符号1
+        if (symb != null && symb!!.trim().length > 0) {
+            str = str?.replace(symb!!, "")?.trim()//fixme 去除符号1
+            for (i in 0..symb!!.lastIndex) {
+                str = str?.replace(symb!![i].toString(), "")?.trim()
+            }
+        }
+        var count = 4
+        if (symb2 != null && symb2!!.length > 0) {
+            if (!str.contains(symb2!!)) {
+                count = 3
+            }
+        }
+        //符号2
+        if (str != null && str.length > count && symb2 != null && symb2!!.trim().length > 0) {
+            str = str.replace(symb2!!, "").trim()//fixme 去除符号2
+            for (i in 0..symb2!!.lastIndex) {
+                str = str?.replace(symb2!![i].toString(), "")?.trim()
+            }
+            str = str.toLong().toString()//fixme 转换成合格的Long类型。
+            var str2: String? = ""
+            if (str.length > 3) {
+                var str3 = str.reversed()//数据反转
+                for (i in 0 until str3.length) {
+                    if (str3[i] != null) {
+                        str2 = str3[i].toString() + str2
+                        if ((i + 1) % 3 == 0 && i != str.length - 1) {
+                            str2 = symb2 + str2//fixme 加上符号2
+                        }
+                    }
+                }
+            }else{
+                str2=str
+            }
+            str2 = symb + str2//fixme 加上符号1
+            str2 = str2.replace("null", "").trim()
+            //text.toString() 很重要，必须要手动转换成String类型。
+            if (!text.toString().trim().equals(str2.trim())) {
+                setText(str2.trim())
+                setSelection(length())//光标
+            }
+        } else if (str != null && str.length > 0 && symb2 != null && symb2!!.trim().length > 0) {
+            str = str.replace(symb2!!, "").trim()//fixme 去除符号2
+            for (i in 0..symb2!!.lastIndex) {
+                str = str?.replace(symb2!![i].toString(), "")?.trim()
+            }
+            str = str.toLong().toString()//fixme 转换成合格的Long类型。
+            str = symb + str//fixme 加上符号1
+            if (!text.toString().trim().equals(str.trim())) {
+                setText(str.trim())
+                setSelection(length())//光标
+            }
+        }
+        getMoney()?.let {
+            //最大值
+            if (it > maxMoney) {
+                setMoney(maxMoney.toString())
+            }
+            //最小值
+            if (it < minMoney) {
+                setMoney(minMoney.toString())
+            }
+        }
+
     }
 
     var maxMoney = Long.MAX_VALUE//最大金额
+        set(value) {
+            field = value
+            var l = value.toString().length
+            if (l > 0) {
+                if (symb != null && symb!!.length > 0) {
+                    if (symb2 != null && symb2!!.length > 0) {
+                        setMaxLength(l + (l / 3) * symb2!!.length + symb!!.length)//设置最大金额的同时设置最长个数。
+                    } else {
+                        setMaxLength(l + symb!!.length)//设置最大金额的同时设置最长个数。
+                    }
+                } else {
+                    if (symb2 != null && symb2!!.length > 0) {
+                        setMaxLength(l + (l / 3) * symb2!!.length)
+                    } else {
+                        setMaxLength(l)
+                    }
+                }
+            }
+        }
+
     //添加金额
     fun addMoney(money: Long) {
-        var cmoney = getMoney() + money
+        var cmoney = money
+        getMoney()?.let {
+            cmoney = it + money
+        }
         if (cmoney > maxMoney) {
             cmoney = maxMoney
         }
@@ -582,7 +631,10 @@ open class KRadiusEditText : EditText {
     var minMoney = 0L//最少金额
     //减少金额
     fun subMoney(money: Long) {
-        var m = getMoney() - money
+        var m = money
+        getMoney()?.let {
+            m = it - money
+        }
         if (m < minMoney) {
             m = minMoney
         }
