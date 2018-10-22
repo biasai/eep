@@ -86,7 +86,7 @@ open class KRadiusEditText : EditText {
     }
 
     //清除背景
-    open fun clearBackground(){
+    open fun clearBackground() {
         clearOriBackground()
     }
 
@@ -476,6 +476,117 @@ open class KRadiusEditText : EditText {
             paint.style = Paint.Style.FILL
             canvas.drawRect(x, y, x + it.width, centerY + it.height / 2 * 1.1f, paint)
         }
+    }
+
+    var symb: String? = "￥"//人民币符号
+    var symb2: String? = ","//逗号，3位数一个逗号。即一千。
+    //金钱类型，Long类型
+    fun money(symb: String? = "￥", symb2: String? = ",") {
+        gravity = Gravity.CENTER
+        inputType = InputType.TYPE_CLASS_NUMBER//数字类型，只能输入数字，但是可以代码设置中文和其他符合。
+        //var symb: String? = "￥"//人民币符号
+        //var symb2: String? = ","//逗号，3位数一个逗号。即一千。
+        this.symb = symb
+        this.symb2 = symb2
+        addTextWatcher {
+            var str: String? = text.toString()//去除符号的文本
+            //符号1
+            if (symb != null && symb.trim().length > 0) {
+                str = str?.replace(symb, "")?.trim()//fixme 去除符号1
+                if (it.contains(symb)) {
+                    //有符号
+                    if (it.length <= 1) {
+                        setText(null)//只有符号，没有数字时，清除掉符号。
+                    }
+                } else if (!it.contains(symb) && it.length > 0) {
+                    //加上符号
+                    setText(symb + it)
+                    setSelection(length())//光标
+                }
+            }
+            var count = 4
+            if (symb2 != null && symb2.length > 0) {
+                if (!text.toString().contains(symb2)) {
+                    count = 3
+                }
+            }
+            //符号2
+            if (str != null && str.length > count && symb2 != null && symb2.trim().length > 0) {
+                str = str.replace(symb2, "").trim()//fixme 去除符号2
+                str = str.toLong().toString()//fixme 转换成合格的Long类型。
+                var str2: String? = ""
+                if (str.length > 3) {
+                    var str3 = str.reversed()//数据反转
+                    for (i in 0 until str3.length) {
+                        if (str3[i] != null) {
+                            str2 = str3[i].toString() + str2
+                            if ((i + 1) % 3 == 0 && i != str.length - 1) {
+                                str2 = symb2 + str2//fixme 加上符号2
+                            }
+                        }
+                    }
+                }
+                str2 = symb + str2//fixme 加上符号1
+                str2 = str2.replace("null", "").trim()
+                //text.toString() 很重要，必须要手动转换成String类型。
+                if (!text.toString().trim().equals(str2.trim())) {
+                    setText(str2.trim())
+                    setSelection(length())//光标
+                }
+            } else if (str != null && str.length > 0 && symb2 != null && symb2.trim().length > 0) {
+                str = str.replace(symb2, "").trim()//fixme 去除符号2
+                str = str.toLong().toString()//fixme 转换成合格的Long类型。
+                str = symb + str//fixme 加上符号1
+                if (!text.toString().trim().equals(str.trim())) {
+                    setText(str.trim())
+                    setSelection(length())//光标
+                }
+            }
+        }
+    }
+
+    //获取金额
+    fun getMoney(): Int {
+        var str: String = text.toString()//去除符号的文本
+        if (symb != null && symb!!.trim().length > 0) {
+            str = str?.replace(symb!!, "")?.trim()//fixme 去除符号1
+        }
+        if (symb2 != null && symb2!!.trim().length > 0) {
+            str = str.replace(symb2!!, "").trim()//fixme 去除符号2
+        }
+        return str.toInt()
+    }
+
+    //设置金额
+    fun setMoney(cmoney: Long) {
+        var m = cmoney
+        if (m < minMoney) {
+            m = minMoney
+        }
+        if (m > maxMoney) {
+            m = maxMoney
+        }
+        setText(m.toString())
+    }
+
+    var maxMoney = Long.MAX_VALUE//最大金额
+    //添加金额
+    fun addMoney(money: Long) {
+        var cmoney = getMoney() + money
+        if (cmoney > maxMoney) {
+            cmoney = maxMoney
+        }
+        setText(cmoney.toString())
+    }
+
+    var minMoney = 0L//最少金额
+    //减少金额
+    fun subMoney(money: Long) {
+        var m = getMoney() - money
+        if (m < minMoney) {
+            m = minMoney
+        }
+        setText(m.toString())
     }
 
     //小数类型,保留指定小数个数
@@ -1411,7 +1522,7 @@ open class KRadiusEditText : EditText {
     var w: Int = 0//获取控件的真实宽度
         get() {
             var w = width
-            if (layoutParams!=null&&layoutParams.width > w) {
+            if (layoutParams != null && layoutParams.width > w) {
                 w = layoutParams.width
             }
             return w
@@ -1420,7 +1531,7 @@ open class KRadiusEditText : EditText {
     var h: Int = 0//获取控件的真实高度
         get() {
             var h = height
-            if (layoutParams!=null&&layoutParams.height > h) {
+            if (layoutParams != null && layoutParams.height > h) {
                 h = layoutParams.height
             }
             return h
