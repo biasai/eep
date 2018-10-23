@@ -331,15 +331,18 @@ open class KRadiusTextView : TextView {
     }
 
     var symb: String? = "￥"//人民币符号
+    var isBehindSymb: Boolean = false//symb符号是否放在末尾。
     var symb2: String? = ","//逗号，3位数一个逗号。即一千。
     //金钱类型，Long类型
-    fun money(symb: String? = "￥", symb2: String? = ",") {
+    fun money(symb: String? = "￥", symb2: String? = ",", isBehindSymb: Boolean = false) {
         gravity = Gravity.CENTER
         inputType = InputType.TYPE_CLASS_NUMBER//数字类型，只能输入数字，但是可以代码设置中文和其他符合。
         //var symb: String? = "￥"//人民币符号
         //var symb2: String? = ","//逗号，3位数一个逗号。即一千。
         this.symb = symb
+        this.isBehindSymb = isBehindSymb
         this.symb2 = symb2
+        maxMoney = maxMoney//fixme 设置最大长度。防止异常。很重要哦。
         addTextWatcher {
             setMoney(it)
         }
@@ -415,12 +418,20 @@ open class KRadiusTextView : TextView {
             } else {
                 str2 = str
             }
-            str2 = symb + str2//fixme 加上符号1
+            if (isBehindSymb) {
+                str2 = str2 + symb//fixme 加上符号1,符号置后
+            } else {
+                str2 = symb + str2//fixme 加上符号1
+            }
             str2 = str2.replace("null", "").trim()
             //text.toString() 很重要，必须要手动转换成String类型。
             if (!text.toString().trim().equals(str2.trim())) {
                 setText(str2.trim())
-                //setSelection(length())//光标
+//                if (isBehindSymb && symb != null && symb!!.length > 0) {
+//                    setSelection(length() - symb!!.length)//光标
+//                } else {
+//                    setSelection(length())//光标
+//                }
             }
         } else if (str != null && str.length > 0 && symb2 != null && symb2!!.trim().length > 0) {
             str = str.replace(symb2!!, "").trim()//fixme 去除符号2
@@ -428,10 +439,18 @@ open class KRadiusTextView : TextView {
                 str = str?.replace(symb2!![i].toString(), "")?.trim()
             }
             str = str.toLong().toString()//fixme 转换成合格的Long类型。
-            str = symb + str//fixme 加上符号1
+            if (isBehindSymb) {
+                str = str + symb//fixme 加上符号1,符号置后
+            } else {
+                str = symb + str//fixme 加上符号1
+            }
             if (!text.toString().trim().equals(str.trim())) {
                 setText(str.trim())
-                //setSelection(length())//光标
+//                if (isBehindSymb && symb != null && symb!!.length > 0) {
+//                    setSelection(length() - symb!!.length)//光标
+//                } else {
+//                    setSelection(length())//光标
+//                }
             }
         }
         getMoney()?.let {

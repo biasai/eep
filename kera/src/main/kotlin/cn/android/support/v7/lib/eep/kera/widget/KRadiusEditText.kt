@@ -12,6 +12,8 @@ import android.os.Build
 import android.text.*
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
+import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.*
 import android.view.animation.TranslateAnimation
 import android.view.inputmethod.EditorInfo
@@ -20,6 +22,7 @@ import android.widget.TextView
 import cn.android.support.v7.lib.eep.kera.R
 import cn.android.support.v7.lib.eep.kera.base.KView
 import cn.android.support.v7.lib.eep.kera.bean.KRadius
+import cn.android.support.v7.lib.eep.kera.bean.KSearch
 import cn.android.support.v7.lib.eep.kera.common.kpx
 import cn.android.support.v7.lib.eep.kera.helper.KAsteriskPasswordTransformationMethod
 import cn.android.support.v7.lib.eep.kera.helper.KLimitInputTextWatcher
@@ -478,16 +481,103 @@ open class KRadiusEditText : EditText {
         }
     }
 
+    //搜索指定字符，显示指定颜色
+    fun search(vararg search: KSearch) {
+        var txt2 = text.toString()
+        val spannableString = SpannableString(txt2)//原始文本
+        setText(txt2)//恢复原样
+        for (i in 0 until search.size) {
+            var txt3 = search[i].text
+            txt3?.let {
+                var length = it.length
+                if (length > 0 && txt2.length >= length) {
+                    var start = txt2.indexOf(it)//开始下标（包含）,如果没有搜索到会返回-1
+                    var end = start + length//结束下标（不包含）
+                    //Log.e("test", "开始下标:\t" + start + "\t结束:\t" + end)
+                    if (start >= 0) {
+                        //参数为 开始下标，和结束下标。
+                        spannableString.setSpan(ForegroundColorSpan(search[i].color), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        if (search[i].isMul) {
+                            //搜索多个
+                            var index = start + length
+                            while (txt2.length > index && txt2.indexOf(it, index) >= 0) {
+                                start = txt2.indexOf(it, index)
+                                end = start + length
+                                spannableString.setSpan(ForegroundColorSpan(search[i].color), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                index = start + length
+                            }
+                        }
+                        setText(spannableString)//特定颜色显示。
+                    }
+                }
+            }
+        }
+    }
+
+    var content: String? = null
+    fun content(content: Long, num: Int = 4, symbol: String = "*") {
+        content(content.toString(), num, symbol)
+    }
+
+    /**
+     * 中间内容带符号，如星号*
+     * content 文本内容
+     * symbolNum 符号个数
+     * symbol 符号
+     * symbolStar 符号开始的位置
+     * frontNum 前半部分，添加想间隙。
+     * behindNum 后半部分添加的间隙。
+     */
+    fun content(content: String?, symbolNum: Int = 4, symbol: String = "*", symbolStar: Int? = null, frontNum: Int? = null, behindNum: Int? = null) {
+        content?.let {
+            if (it.trim().length >= symbolNum && symbolNum > 0) {
+                this.content = it//保存真实内容
+                var length = content.length - symbolNum
+                var i = Math.floor(length / 2.0).toInt()//floor是取小，所以头部是小于尾部的。
+                if (symbolStar != null && symbolStar >= 0) {
+                    i = symbolStar
+                }
+                var front = it.substring(0, i)
+                var behind = it.substring(i + symbolNum)
+                var sym = ""
+                for (i in 1..symbolNum) {
+                    sym = sym + symbol//星号
+                }
+                //前面部分，添加的间隙
+                frontNum?.let {
+                    if (it >= 1) {
+                        for (i in 1..it) {
+                            front += "\u0020"
+                        }
+                    }
+                }
+                //后半部分，添加的间隙
+                behindNum?.let {
+                    if (it >= 1) {
+                        for (i in 1..it) {
+                            behind = "\u0020" + behind
+                        }
+                    }
+                }
+                setText(front + sym.trim() + behind)
+            }
+        }
+    }
+
+
     var symb: String? = "￥"//人民币符号
+    var isBehindSymb: Boolean = false//symb符号是否放在末尾。
     var symb2: String? = ","//逗号，3位数一个逗号。即一千。
     //金钱类型，Long类型
-    fun money(symb: String? = "￥", symb2: String? = ",") {
+    fun money(symb: String? = "￥", symb2: String? = ",", isBehindSymb: Boolean = false) {
         gravity = Gravity.CENTER
         inputType = InputType.TYPE_CLASS_NUMBER//数字类型，只能输入数字，但是可以代码设置中文和其他符合。
         //var symb: String? = "￥"//人民币符号
         //var symb2: String? = ","//逗号，3位数一个逗号。即一千。
         this.symb = symb
+        this.isBehindSymb = isBehindSymb
         this.symb2 = symb2
+        maxMoney = maxMoney//fixme 设置最大长度。防止异常。很重要哦。
         addTextWatcher {
             setMoney(it)
         }
@@ -560,15 +650,23 @@ open class KRadiusEditText : EditText {
                         }
                     }
                 }
-            }else{
-                str2=str
+            } else {
+                str2 = str
             }
-            str2 = symb + str2//fixme 加上符号1
+            if (isBehindSymb) {
+                str2 = str2 + symb//fixme 加上符号1,符号置后
+            } else {
+                str2 = symb + str2//fixme 加上符号1
+            }
             str2 = str2.replace("null", "").trim()
             //text.toString() 很重要，必须要手动转换成String类型。
             if (!text.toString().trim().equals(str2.trim())) {
                 setText(str2.trim())
-                setSelection(length())//光标
+                if (isBehindSymb && symb != null && symb!!.length > 0) {
+                    setSelection(length() - symb!!.length)//光标
+                } else {
+                    setSelection(length())//光标
+                }
             }
         } else if (str != null && str.length > 0 && symb2 != null && symb2!!.trim().length > 0) {
             str = str.replace(symb2!!, "").trim()//fixme 去除符号2
@@ -576,10 +674,18 @@ open class KRadiusEditText : EditText {
                 str = str?.replace(symb2!![i].toString(), "")?.trim()
             }
             str = str.toLong().toString()//fixme 转换成合格的Long类型。
-            str = symb + str//fixme 加上符号1
+            if (isBehindSymb) {
+                str = str + symb//fixme 加上符号1,符号置后
+            } else {
+                str = symb + str//fixme 加上符号1
+            }
             if (!text.toString().trim().equals(str.trim())) {
                 setText(str.trim())
-                setSelection(length())//光标
+                if (isBehindSymb && symb != null && symb!!.length > 0) {
+                    setSelection(length() - symb!!.length)//光标
+                } else {
+                    setSelection(length())//光标
+                }
             }
         }
         getMoney()?.let {
