@@ -11,6 +11,8 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.support.v4.app.INotificationSideChannel
 import android.text.*
+import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -19,6 +21,7 @@ import android.view.animation.TranslateAnimation
 import cn.android.support.v7.lib.eep.kera.R
 import cn.android.support.v7.lib.eep.kera.base.KView
 import cn.android.support.v7.lib.eep.kera.bean.KRadius
+import cn.android.support.v7.lib.eep.kera.bean.KSearch
 import cn.android.support.v7.lib.eep.kera.common.kpx
 import cn.android.support.v7.lib.eep.kera.https.KBitmaps
 import cn.android.support.v7.lib.eep.kera.utils.KTimerUtils
@@ -244,6 +247,39 @@ open class KRadiusTextView : TextView {
         }
     }
 
+    //搜索指定字符，显示指定颜色
+    fun search(vararg search: KSearch) {
+        var txt2 = text.toString()
+        val spannableString = SpannableString(txt2)//原始文本
+        setText(txt2)//恢复原样
+        for (i in 0 until search.size) {
+            var txt3 = search[i].text
+            txt3?.let {
+                var length = it.length
+                if (length > 0 && txt2.length >= length) {
+                    var start = txt2.indexOf(it)//开始下标（包含）,如果没有搜索到会返回-1
+                    var end = start + length//结束下标（不包含）
+                    //Log.e("test", "开始下标:\t" + start + "\t结束:\t" + end)
+                    if (start >= 0) {
+                        //参数为 开始下标，和结束下标。
+                        spannableString.setSpan(ForegroundColorSpan(search[i].color), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        if (search[i].isMul) {
+                            //搜索多个
+                            var index = start + length
+                            while (txt2.length > index && txt2.indexOf(it, index) >= 0) {
+                                start = txt2.indexOf(it, index)
+                                end = start + length
+                                spannableString.setSpan(ForegroundColorSpan(search[i].color), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                index = start + length
+                            }
+                        }
+                        setText(spannableString)//特定颜色显示。
+                    }
+                }
+            }
+        }
+    }
+
     var content: String? = null
     fun content(content: Long, num: Int = 4, symbol: String = "*") {
         content(content.toString(), num, symbol)
@@ -376,8 +412,8 @@ open class KRadiusTextView : TextView {
                         }
                     }
                 }
-            }else{
-                str2=str
+            } else {
+                str2 = str
             }
             str2 = symb + str2//fixme 加上符号1
             str2 = str2.replace("null", "").trim()
