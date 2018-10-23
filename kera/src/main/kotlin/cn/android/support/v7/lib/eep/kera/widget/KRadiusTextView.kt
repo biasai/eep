@@ -469,22 +469,23 @@ open class KRadiusTextView : TextView {
     var maxMoney = Long.MAX_VALUE//最大金额
         set(value) {
             field = value
-            var l = value.toString().length
-            if (l > 0) {
-                if (symb != null && symb!!.length > 0) {
-                    if (symb2 != null && symb2!!.length > 0) {
-                        setMaxLength(l + (l / 3) * symb2!!.length + symb!!.length)//设置最大金额的同时设置最长个数。
-                    } else {
-                        setMaxLength(l + symb!!.length)//设置最大金额的同时设置最长个数。
-                    }
-                } else {
-                    if (symb2 != null && symb2!!.length > 0) {
-                        setMaxLength(l + (l / 3) * symb2!!.length)
-                    } else {
-                        setMaxLength(l)
-                    }
-                }
-            }
+            setMaxLength(Long.MAX_VALUE.toString().length * 3)//fixme 防止异常，长度尽可能的大。长度已经没有意义。由最大值控制。
+//            var l = value.toString().length
+//            if (l > 0) {
+//                if (symb != null && symb!!.length > 0) {
+//                    if (symb2 != null && symb2!!.length > 0) {
+//                        setMaxLength(l + (l / 3) * symb2!!.length + symb!!.length)//设置最大金额的同时设置最长个数。
+//                    } else {
+//                        setMaxLength(l + symb!!.length)//设置最大金额的同时设置最长个数。
+//                    }
+//                } else {
+//                    if (symb2 != null && symb2!!.length > 0) {
+//                        setMaxLength(l + (l / 3) * symb2!!.length)
+//                    } else {
+//                        setMaxLength(l)
+//                    }
+//                }
+//            }
         }
 
     //添加金额
