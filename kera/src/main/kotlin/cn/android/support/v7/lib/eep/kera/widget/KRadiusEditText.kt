@@ -1361,6 +1361,68 @@ open class KRadiusEditText : EditText {
         }
     }
 
+    //fixme 来自sd卡,普通
+    fun autoDefaultBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoDefaultBg = KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoDefaultBg?.let {
+            autoDefaultBg = kpx.xBitmap(it, width, height)//自动适配
+        }
+        if (isAutoWH) {
+            requestLayout()
+        }else{
+            invalidate()
+        }
+    }
+
+    //fixme 来自sd卡,触摸
+    fun autoPressBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoPressBg = KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoPressBg?.let {
+            autoPressBg = kpx.xBitmap(it, width, height)//自动适配
+        }
+        if (isAutoWH) {
+            requestLayout()
+        }else{
+            invalidate()
+        }
+        isClickable = true//具备点击能力
+    }
+
+    //fixme 来自sd卡,选中
+    fun autoSelectBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoSelectBg =KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoSelectBg?.let {
+            autoSelectBg = kpx.xBitmap(it, width, height)//自动适配
+        }
+        if (isAutoWH) {
+            requestLayout()
+        }else{
+            invalidate()
+        }
+        isClickable = true//具备点击能力
+    }
+
+    //fixme 来自sd卡,普通，触摸，选中
+    fun autoBgFromFile(default: String, press: String? = default, select: String? = press, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoDefaultBgFromFile(default, width, height, isRGB_565)//fixme 普通
+        if (press == default || press.equals(default)) {
+            autoPressBg = autoDefaultBg
+        } else {
+            press?.apply {
+                autoPressBgFromFile(this, width, height, isRGB_565)//fixme 触摸
+                isClickable = true//具备点击能力
+            }
+        }
+        if (press == select || press.equals(select)) {
+            autoSelectBg = autoPressBg
+        } else {
+            select?.apply {
+                autoSelectBgFromFile(this, width, height, isRGB_565)//fixme 选中
+                isClickable = true//具备点击能力
+            }
+        }
+    }
+
     var isAutoWH = true//fixme 控件的宽度和高度是否为自定义位图的宽度和高度。默认是
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var w = 0

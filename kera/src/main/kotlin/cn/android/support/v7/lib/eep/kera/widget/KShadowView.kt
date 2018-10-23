@@ -883,6 +883,56 @@ open class KShadowView : TextView {
         }
     }
 
+    //fixme 来自sd卡,普通
+    fun autoDefaultBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoDefaultBg = KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoDefaultBg?.let {
+            autoDefaultBg = kpx.xBitmap(it, width, height)//自动适配
+        }
+        invalidate()
+    }
+
+    //fixme 来自sd卡,触摸
+    fun autoPressBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoPressBg = KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoPressBg?.let {
+            autoPressBg = kpx.xBitmap(it, width, height)//自动适配
+        }
+        invalidate()
+        isClickable = true//具备点击能力
+    }
+
+    //fixme 来自sd卡,选中
+    fun autoSelectBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoSelectBg =KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoSelectBg?.let {
+            autoSelectBg = kpx.xBitmap(it, width, height)//自动适配
+        }
+        invalidate()
+        isClickable = true//具备点击能力
+    }
+
+    //fixme 来自sd卡,普通，触摸，选中
+    fun autoBgFromFile(default: String, press: String? = default, select: String? = press, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoDefaultBgFromFile(default, width, height, isRGB_565)//fixme 普通
+        if (press == default || press.equals(default)) {
+            autoPressBg = autoDefaultBg
+        } else {
+            press?.apply {
+                autoPressBgFromFile(this, width, height, isRGB_565)//fixme 触摸
+                isClickable = true//具备点击能力
+            }
+        }
+        if (press == select || press.equals(select)) {
+            autoSelectBg = autoPressBg
+        } else {
+            select?.apply {
+                autoSelectBgFromFile(this, width, height, isRGB_565)//fixme 选中
+                isClickable = true//具备点击能力
+            }
+        }
+    }
+
     var autoLeftPadding = 0f//左补丁(负数也有效哦)
     var autoTopPadding = 0f//上补丁
     var isAutoCenter = true//位图是否居中,默认居中（水平+垂直居中）

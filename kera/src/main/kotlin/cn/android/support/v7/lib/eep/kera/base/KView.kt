@@ -76,7 +76,7 @@ open class KView : View {
     }
 
     //清除背景
-    open fun clearBackground(){
+    open fun clearBackground() {
         clearOriBackground()
     }
 
@@ -434,6 +434,7 @@ open class KView : View {
         }
     }
 
+
     fun autoSelectBg(resId: Int, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
         autoSelectBg = KAssetsUtils.getInstance().getBitmapFromAssets(null, resId, isRGB_565)
         autoSelectBg?.let {
@@ -455,6 +456,7 @@ open class KView : View {
         }
         isClickable = true//具备点击能力
     }
+
 
     //fixme 防止触摸状态和选中状态冲突，会出现一闪的情况。把触摸状态制空。
     //fixme autoBg(R.mipmap.p_second_gou_gay,null, R.mipmap.p_second_gou_blue)
@@ -493,6 +495,68 @@ open class KView : View {
         } else {
             select?.apply {
                 autoSelectBg(this, width, height, isRGB_565)
+                isClickable = true//具备点击能力
+            }
+        }
+    }
+
+    //fixme 来自sd卡,普通
+    fun autoDefaultBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoDefaultBg = KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoDefaultBg?.let {
+            autoDefaultBg = kpx.xBitmap(it, width, height)//自动适配
+        }
+        if (isAutoWH) {
+            requestLayout()
+        }else{
+            invalidate()
+        }
+    }
+
+    //fixme 来自sd卡,触摸
+    fun autoPressBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoPressBg = KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoPressBg?.let {
+            autoPressBg = kpx.xBitmap(it, width, height)//自动适配
+        }
+        if (isAutoWH) {
+            requestLayout()
+        }else{
+            invalidate()
+        }
+        isClickable = true//具备点击能力
+    }
+
+    //fixme 来自sd卡,选中
+    fun autoSelectBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoSelectBg =KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoSelectBg?.let {
+            autoSelectBg = kpx.xBitmap(it, width, height)//自动适配
+        }
+        if (isAutoWH) {
+            requestLayout()
+        }else{
+            invalidate()
+        }
+        isClickable = true//具备点击能力
+    }
+
+    //fixme 来自sd卡,普通，触摸，选中
+    fun autoBgFromFile(default: String, press: String? = default, select: String? = press, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
+        autoDefaultBgFromFile(default, width, height, isRGB_565)//fixme 普通
+        if (press == default || press.equals(default)) {
+            autoPressBg = autoDefaultBg
+        } else {
+            press?.apply {
+                autoPressBgFromFile(this, width, height, isRGB_565)//fixme 触摸
+                isClickable = true//具备点击能力
+            }
+        }
+        if (press == select || press.equals(select)) {
+            autoSelectBg = autoPressBg
+        } else {
+            select?.apply {
+                autoSelectBgFromFile(this, width, height, isRGB_565)//fixme 选中
                 isClickable = true//具备点击能力
             }
         }
