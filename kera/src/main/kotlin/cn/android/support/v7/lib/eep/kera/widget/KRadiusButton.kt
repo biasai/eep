@@ -111,6 +111,7 @@ open class KRadiusButton : Button {
 
     /**
      * 复制文本
+     * fixme isSelectable 所有的View都具备select选中能力,即文本框可以复制粘贴。
      * copyText 为要复制的文本内容。如果为空。则复制文本控件的文本。
      */
     fun copyText(copyText: String? = null) {
