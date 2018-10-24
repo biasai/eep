@@ -16,7 +16,7 @@ import cn.android.support.v7.lib.eep.kera.common.kpx
  * fixme Chekbox和RadioButton 选中按钮自动设置了isSelected,所以不需要手动设置。
  *
  * fixme isSelected=true true 选中，false 未选中。可以通过代码设置
- * fixme isSelectable 所有的View都具备select选中能力
+ * fixme isSelectable 所有的View都具备select选中能力,即文本框可以复制粘贴。
  *
  */
 object KSelectorUtils {

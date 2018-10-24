@@ -114,6 +114,23 @@ open class KRadiusEditText : EditText {
         }
     }
 
+    /**
+     * 复制文本
+     * copyText 为要复制的文本内容。如果为空。则复制文本控件的文本。
+     */
+    fun copyText(copyText: String? = null) {
+        if (context != null && context is Activity) {
+            (context as Activity).apply {
+                var cm: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                if (copyText != null && copyText.length > 0) {
+                    cm.setText(copyText)//复制指定文本
+                } else {
+                    cm.setText(getText())//复制控件文本
+                }
+            }
+        }
+    }
+
     //触摸点击效果。默认具备波浪效果
     open fun onPress(isRipple: Boolean = true) {
         KView.onPress(this, isRipple)

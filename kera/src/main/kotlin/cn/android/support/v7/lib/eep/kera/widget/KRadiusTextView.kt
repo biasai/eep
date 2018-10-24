@@ -86,6 +86,23 @@ open class KRadiusTextView : TextView {
         }
     }
 
+    /**
+     * 复制文本
+     * copyText 为要复制的文本内容。如果为空。则复制文本控件的文本。
+     */
+    fun copyText(copyText: String? = null) {
+        if (context != null && context is Activity) {
+            (context as Activity).apply {
+                var cm: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                if (copyText != null && copyText.length > 0) {
+                    cm.setText(copyText)//复制指定文本
+                } else {
+                    cm.setText(getText())//复制控件文本
+                }
+            }
+        }
+    }
+
     // 两次点击按钮之间的点击间隔不能少于1000毫秒（即1秒）
     var MIN_CLICK_DELAY_TIME = 1000
     var lastClickTime: Long = System.currentTimeMillis()//记录最后一次点击时间
@@ -671,7 +688,7 @@ open class KRadiusTextView : TextView {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
     }
@@ -683,7 +700,7 @@ open class KRadiusTextView : TextView {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
     }
@@ -705,7 +722,7 @@ open class KRadiusTextView : TextView {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
         isClickable = true//具备点击能力
@@ -718,7 +735,7 @@ open class KRadiusTextView : TextView {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
         isClickable = true//具备点击能力
@@ -741,7 +758,7 @@ open class KRadiusTextView : TextView {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
         isClickable = true//具备点击能力
@@ -754,7 +771,7 @@ open class KRadiusTextView : TextView {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
         isClickable = true//具备点击能力
@@ -810,7 +827,7 @@ open class KRadiusTextView : TextView {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
     }
@@ -823,7 +840,7 @@ open class KRadiusTextView : TextView {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
         isClickable = true//具备点击能力
@@ -831,13 +848,13 @@ open class KRadiusTextView : TextView {
 
     //fixme 来自sd卡,选中
     fun autoSelectBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
-        autoSelectBg =KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoSelectBg = KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
         autoSelectBg?.let {
             autoSelectBg = kpx.xBitmap(it, width, height)//自动适配
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
         isClickable = true//具备点击能力
@@ -863,6 +880,7 @@ open class KRadiusTextView : TextView {
             }
         }
     }
+
     var isAutoWH = true//fixme 控件的宽度和高度是否为自定义位图的宽度和高度。默认是
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var w = 0
@@ -900,10 +918,10 @@ open class KRadiusTextView : TextView {
             }
         }
         if (w > 0 && h > 0) {
-            this.w=w
-            this.h=h
-            layoutParams.width=w
-            layoutParams.height=h
+            this.w = w
+            this.h = h
+            layoutParams.width = w
+            layoutParams.height = h
             //取自定义位图宽度和高度最大的那个。
             setMeasuredDimension(w, h)
         } else {
