@@ -1038,6 +1038,7 @@ open class KShadowView : TextView {
             }
         }
         autoSelectBg = null
+        invalidate()
         System.gc()//提醒内存回收
     }
 

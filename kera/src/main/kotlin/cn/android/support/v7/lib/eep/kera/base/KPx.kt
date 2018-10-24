@@ -107,6 +107,9 @@ open class KPx {
     //以x为标准适配位图
     //isRecycle 是否释放原图
     fun xBitmap(src: Bitmap, w: Int = 0, h: Int = 0, isRecycle: Boolean = true): Bitmap {
+        if (src.width == w && src.height == h) {
+            return src
+        }
         var width = w
         var height = h
         //如果宽度和高度小于0。就以位置自身的宽和高进行适配
@@ -116,10 +119,7 @@ open class KPx {
             height = x(src.height)
         }
         if (width > 0 && height > 0 && src.width != width) {
-            var bm = Bitmap.createScaledBitmap(src, width, height, true)
-            if (isRecycle) {
-                src.recycle()//原有的位图释放掉
-            }
+            var bm=GeomeBitmap(src, width = width.toFloat(), height = height.toFloat(),isRecycle = isRecycle)
             return bm
         }
         return src
@@ -128,6 +128,9 @@ open class KPx {
     //以y为标准适配位图
     //isRecycle 是否释放原图
     fun yBitmap(src: Bitmap, w: Int = 0, h: Int = 0, isRecycle: Boolean = true): Bitmap {
+        if (src.width == w && src.height == h) {
+            return src
+        }
         var width = w
         var height = h
         //如果宽度和高度小于0。就以位置自身的宽和高进行适配
@@ -137,7 +140,7 @@ open class KPx {
             height = y(src.height)
         }
         if (width > 0 && height > 0 && src.width != width) {
-            var bm = Bitmap.createScaledBitmap(src, width, height, true)
+            var bm=GeomeBitmap(src, width = width.toFloat(), height = height.toFloat(),isRecycle = isRecycle)
             if (isRecycle) {
                 src.recycle()//原有的位图释放掉
             }

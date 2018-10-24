@@ -41,18 +41,13 @@ import org.jetbrains.anko.*
  */
 open class KRadiusEditText : EditText {
 
-    constructor(viewGroup: ViewGroup) : this(viewGroup.context, 0) {
-    }
+    constructor(viewGroup: ViewGroup) : this(viewGroup.context, 0) {}
+
+    var type = 1//fixme 1有下划线，0没有下划线。
 
     constructor(viewGroup: ViewGroup, type: Int = 0) : super(viewGroup.context) {
         setLayerType(View.LAYER_TYPE_HARDWARE, null)//默认就开启硬件加速，不然圆角无效果
-        if (type == 0) {
-            //取消掉下线横线
-            isLineAnime = false
-            lineStrokeWidth = 0F
-            lineStrokeColor = Color.TRANSPARENT
-            leftPadding = 0
-        }
+        this.type = type
         viewGroup.addView(this)//直接添加进去,省去addView(view)
     }
 
@@ -65,7 +60,17 @@ open class KRadiusEditText : EditText {
         viewGroup.addView(this)//直接添加进去,省去addView(view)
     }
 
-    constructor(context: Context) : super(context) {}
+    constructor(context: Context) : super(context) {
+        if (type == 0) {
+            //取消掉下线横线
+            isLineAnime = false
+            lineStrokeWidth = 0F
+            lineStrokeColor = Color.TRANSPARENT
+            leftPadding = 0
+        } else {
+            setCursorColor(lineStrokeColor)//鼠标颜色
+        }
+    }
 
     constructor(context: Context, type: Int = 0) : super(context) {
         if (type == 0) {
@@ -1109,7 +1114,6 @@ open class KRadiusEditText : EditText {
         hintTextColor = Color.parseColor("#9b9b9b")
         leftPadding = kpx.x(60)//左边内补丁
         gravity = Gravity.CENTER_VERTICAL or Gravity.LEFT//左靠齐，垂直居中
-        setCursorColor(lineStrokeColor)
         //默认就是文本类型。在此限制一下文本的长度。
         filters = arrayOf<InputFilter>(InputFilter.LengthFilter(18)) //最大输入长度
     }
@@ -1242,6 +1246,8 @@ open class KRadiusEditText : EditText {
         }
         if (isAutoWH) {
             requestLayout()
+        } else {
+            invalidate()
         }
     }
 
@@ -1252,6 +1258,8 @@ open class KRadiusEditText : EditText {
         }
         if (isAutoWH) {
             requestLayout()
+        } else {
+            invalidate()
         }
     }
 
@@ -1272,6 +1280,8 @@ open class KRadiusEditText : EditText {
         }
         if (isAutoWH) {
             requestLayout()
+        } else {
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -1283,6 +1293,8 @@ open class KRadiusEditText : EditText {
         }
         if (isAutoWH) {
             requestLayout()
+        } else {
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -1304,6 +1316,8 @@ open class KRadiusEditText : EditText {
         }
         if (isAutoWH) {
             requestLayout()
+        } else {
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -1315,6 +1329,8 @@ open class KRadiusEditText : EditText {
         }
         if (isAutoWH) {
             requestLayout()
+        } else {
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -1369,7 +1385,7 @@ open class KRadiusEditText : EditText {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
     }
@@ -1382,7 +1398,7 @@ open class KRadiusEditText : EditText {
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
         isClickable = true//具备点击能力
@@ -1390,13 +1406,13 @@ open class KRadiusEditText : EditText {
 
     //fixme 来自sd卡,选中
     fun autoSelectBgFromFile(filePath: String, width: Int = 0, height: Int = 0, isRGB_565: Boolean = false) {
-        autoSelectBg =KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
+        autoSelectBg = KAssetsUtils.getInstance().getBitmapFromFile(filePath, isRGB_565)
         autoSelectBg?.let {
             autoSelectBg = kpx.xBitmap(it, width, height)//自动适配
         }
         if (isAutoWH) {
             requestLayout()
-        }else{
+        } else {
             invalidate()
         }
         isClickable = true//具备点击能力
@@ -1460,6 +1476,10 @@ open class KRadiusEditText : EditText {
             }
         }
         if (w > 0 && h > 0) {
+            this.w = w
+            this.h = h
+            layoutParams.width = w
+            layoutParams.height = h
             //取自定义位图宽度和高度最大的那个。
             setMeasuredDimension(w, h)
         } else {
@@ -1592,6 +1612,7 @@ open class KRadiusEditText : EditText {
             }
         }
         autoUrlBg = null
+        invalidate()
         System.gc()//提醒内存回收
     }
 

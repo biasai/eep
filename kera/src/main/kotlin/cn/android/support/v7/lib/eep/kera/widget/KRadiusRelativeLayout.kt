@@ -350,6 +350,8 @@ open class KRadiusRelativeLayout : RelativeLayout {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
     }
 
@@ -360,6 +362,8 @@ open class KRadiusRelativeLayout : RelativeLayout {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
     }
 
@@ -380,6 +384,8 @@ open class KRadiusRelativeLayout : RelativeLayout {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -391,6 +397,8 @@ open class KRadiusRelativeLayout : RelativeLayout {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -412,6 +420,8 @@ open class KRadiusRelativeLayout : RelativeLayout {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -423,6 +433,8 @@ open class KRadiusRelativeLayout : RelativeLayout {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -567,6 +579,10 @@ open class KRadiusRelativeLayout : RelativeLayout {
             }
         }
         if (w > 0 && h > 0) {
+            this.w=w
+            this.h=h
+            layoutParams.width=w
+            layoutParams.height=h
             //取自定义位图宽度和高度最大的那个。
             setMeasuredDimension(w, h)
         } else {
@@ -699,6 +715,7 @@ open class KRadiusRelativeLayout : RelativeLayout {
             }
         }
         autoUrlBg = null
+        invalidate()
         System.gc()//提醒内存回收
     }
 

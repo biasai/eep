@@ -796,6 +796,8 @@ open class KRadiusButton : Button {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
     }
 
@@ -806,6 +808,8 @@ open class KRadiusButton : Button {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
     }
 
@@ -826,6 +830,8 @@ open class KRadiusButton : Button {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -837,6 +843,8 @@ open class KRadiusButton : Button {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -858,6 +866,8 @@ open class KRadiusButton : Button {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -869,6 +879,8 @@ open class KRadiusButton : Button {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -1014,6 +1026,10 @@ open class KRadiusButton : Button {
             }
         }
         if (w > 0 && h > 0) {
+            this.w=w
+            this.h=h
+            layoutParams.width=w
+            layoutParams.height=h
             //取自定义位图宽度和高度最大的那个。
             setMeasuredDimension(w, h)
         } else {
@@ -1146,6 +1162,7 @@ open class KRadiusButton : Button {
             }
         }
         autoUrlBg = null
+        invalidate()
         System.gc()//提醒内存回收
     }
 

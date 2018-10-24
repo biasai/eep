@@ -379,6 +379,8 @@ open class KView : View {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
     }
 
@@ -389,6 +391,8 @@ open class KView : View {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
     }
 
@@ -409,6 +413,8 @@ open class KView : View {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -420,6 +426,8 @@ open class KView : View {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -442,6 +450,8 @@ open class KView : View {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -453,6 +463,8 @@ open class KView : View {
         }
         if (isAutoWH) {
             requestLayout()
+        }else{
+            invalidate()
         }
         isClickable = true//具备点击能力
     }
@@ -600,6 +612,10 @@ open class KView : View {
         }
         if (w > 0 && h > 0) {
             //取自定义位图宽度和高度最大的那个。
+            this.w=w
+            this.h=h
+            layoutParams.width=w
+            layoutParams.height=h
             setMeasuredDimension(w, h)
         } else {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -732,6 +748,7 @@ open class KView : View {
             }
         }
         autoUrlBg = null
+        invalidate()
         System.gc()//提醒内存回收
     }
 
