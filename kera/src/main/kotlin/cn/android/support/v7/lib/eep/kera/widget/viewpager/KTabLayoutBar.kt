@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 
 import cn.android.support.v7.lib.eep.kera.base.KView
+import cn.android.support.v7.lib.eep.kera.common.kpx
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
 import cn.android.support.v7.lib.eep.kera.utils.KProportionUtils
 
@@ -38,6 +39,7 @@ class KTabLayoutBar : android.support.v7.widget.AppCompatImageView, ViewPager.On
 
     constructor(viewGroup: ViewGroup) : super(viewGroup.context) {
         viewGroup.addView(this)//直接添加进去,省去addView(view)
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null)//默认关闭硬件加速，不然线帽Cap没有效果。
     }
 
     constructor(viewGroup: ViewGroup, HARDWARE: Boolean) : super(viewGroup.context) {
@@ -52,6 +54,7 @@ class KTabLayoutBar : android.support.v7.widget.AppCompatImageView, ViewPager.On
     private var tab: Bitmap? = null//位图
     private var color = Color.parseColor("#3388FF")//滑动条颜色，默认为蓝色
     var paint: Paint = KView.getPaint()
+    var paint2: Paint? = null
     var count = 0//页面个数
     var w = 0//单个tab的宽度
     var x = 0
@@ -94,6 +97,9 @@ class KTabLayoutBar : android.support.v7.widget.AppCompatImageView, ViewPager.On
 
     fun setTab(resID: Int) {
         this.tab = KAssetsUtils.getInstance().getBitmapFromAssets(null, resID, true)
+        this.tab?.let {
+            this.tab = kpx.xBitmap(it)//位图适配
+        }
         measure()
     }
 
@@ -124,26 +130,30 @@ class KTabLayoutBar : android.support.v7.widget.AppCompatImageView, ViewPager.On
         this.draw = draw
     }
 
-    override fun dispatchDraw(canvas: Canvas) {
-        super.dispatchDraw(canvas)//画子View，以下方法必须放在下面。不然就被遮挡了。
-        if (this.w <= 0 || this.count <= 0) {
-            measure()
-        }
-        if (this.w > 0) {
-            if (draw !== null) {//自定义绘图最优先。
-                draw!!(canvas, KView.getPaint(), x.toFloat(), height / 2f)
-            } else {
-                if (this.tab != null && !tab!!.isRecycled) {
-                    //位图比颜色优先。
-                    canvas.drawBitmap(tab!!, x.toFloat(), y.toFloat(), paint)
+    override fun draw(canvas: Canvas?) {
+        super.draw(canvas)
+        canvas?.let {
+            if (this.w <= 0 || this.count <= 0) {
+                measure()
+            }
+            if (this.w > 0) {
+                if (draw !== null) {//自定义绘图最优先。
+                    if (paint2 == null) {
+                        paint2 = KView.getPaint()
+                    }
+                    draw!!(canvas, paint2!!, x.toFloat(), height / 2f)
                 } else {
-                    paint.color = color
-                    val rectF = RectF(x.toFloat(), 0f, (x + w).toFloat(), height.toFloat())
-                    canvas.drawRect(rectF, paint)
+                    if (this.tab != null && !tab!!.isRecycled) {
+                        //位图比颜色优先。
+                        canvas.drawBitmap(tab!!, x.toFloat(), y.toFloat(), paint)
+                    } else {
+                        paint.color = color
+                        val rectF = RectF(x.toFloat(), 0f, (x + w).toFloat(), height.toFloat())
+                        canvas.drawRect(rectF, paint)
+                    }
                 }
             }
         }
-
     }
 
     fun measure() {
@@ -175,13 +185,15 @@ class KTabLayoutBar : android.support.v7.widget.AppCompatImageView, ViewPager.On
     }
 
     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-        if (positionOffset >= 0 && positionOffset <= 1 && count > 0) {
-            //positionOffsetPixels是ViewPager的滑动宽度
-            //((float)getWidth()/(float) viewPager.getWidth()) 控件和ViewPager的宽度对比，获取真正的滑动距离。
-            x = (positionOffsetPixels * (width.toFloat() / viewPager!!.width.toFloat()) / count + (position * w).toFloat() + offset.toFloat()).toInt()
-            invalidate()
-            //Log.e("test","滑动x：\t"+x+"\tposition:\t"+position+"\toffset:\t"+offset+"\twidth:\t"+getWidth()+"\tw:\t"+w+"\tcount:\t"+count+"\tpositionOffsetPixels:\t"+positionOffsetPixels);
-        }
+//        if (positionOffset >= 0 && positionOffset <= 1 && count > 0) {
+//            //positionOffsetPixels是ViewPager的滑动宽度
+//            //((float)getWidth()/(float) viewPager.getWidth()) 控件和ViewPager的宽度对比，获取真正的滑动距离。
+//            x = (positionOffsetPixels * (width.toFloat() / viewPager!!.width.toFloat()) / count + (position * w).toFloat() + offset.toFloat()).toInt()
+//            //Log.e("test","滑动x：\t"+x+"\tposition:\t"+position+"\toffset:\t"+offset+"\twidth:\t"+getWidth()+"\tw:\t"+w+"\tcount:\t"+count+"\tpositionOffsetPixels:\t"+positionOffsetPixels);
+//            invalidate()
+//        }
+        x = (positionOffsetPixels * (width.toFloat() / viewPager!!.width.toFloat()) / count + (position * w).toFloat() + offset.toFloat()).toInt()
+        invalidate()
     }
 
     override fun onPageSelected(position: Int) {
