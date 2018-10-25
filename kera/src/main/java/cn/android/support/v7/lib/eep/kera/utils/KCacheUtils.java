@@ -48,14 +48,16 @@ public class KCacheUtils {
     //初始化
     public static KCacheUtils getInstance() {
         if (cache == null) {
-            cache = KCacheUtils.get(KApplication.getInstance().getFilesDir().getAbsoluteFile());
+            //cache = KCacheUtils.get(KApplication.getInstance().getFilesDir().getAbsoluteFile());
+            cache = KCacheUtils.get(KCachesUtils.INSTANCE.getCacheDir());
         }
         return cache;
     }
 
     public static final int TIME_HOUR = 60 * 60;//1小时
     public static final int TIME_DAY = TIME_HOUR * 24;//一天
-    private static final int MAX_SIZE = 1000 * 1000 * 50; // 50 mb
+    //private static final int MAX_SIZE = 1000 * 1000 * 50; // 50 mb
+    private static final int MAX_SIZE = 1000 * 1000 * 5000; // 5000 MB,最大存储大小
     private static final int MAX_COUNT = Integer.MAX_VALUE; // 不限制存放数据的数量
     private static Map<String, KCacheUtils> mInstanceMap = new HashMap<String, KCacheUtils>();
     private ACacheUtilManager mCache;
@@ -339,6 +341,7 @@ public class KCacheUtils {
     /**
      * fixme 保存list数组，注意list里面的实体类必须继承Serializable，
      * fixme 无法保存实体类里面的Bitmap位图。要保存位图，请单独保存。如果实体里面有位图，位图清空即可。
+     *
      * @param key
      * @param list
      * @param <T>
@@ -349,7 +352,7 @@ public class KCacheUtils {
 
     public <T> void put(String key, List<T> list, int saveTime) {
         if (list.size() > 0) {
-            put(key + "size", list.size()+"");
+            put(key + "size", list.size() + "");
             for (int i = 0; i < list.size(); i++) {
                 T t = list.get(i);
                 put(key + "" + i, (Serializable) t, saveTime);

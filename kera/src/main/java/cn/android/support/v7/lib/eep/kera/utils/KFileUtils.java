@@ -274,7 +274,7 @@ public class KFileUtils {
         //Log.e("test","路径:\t"+path+"\t"+Build.BRAND);
         String path = getDCIMPath();
         if (path != null) {
-            return copyFile(target, path, "IMG_"+target.getName());
+            return copyFile(target, path, "IMG_" + target.getName());
         }
         return null;
     }
@@ -290,7 +290,7 @@ public class KFileUtils {
         //Log.e("test","路径:\t"+path+"\t"+Build.BRAND);
         String path = getDCIMPath();
         if (path != null) {
-            return saveBitmap(bitmap, path, "IMG_"+picName);//手机一般都是有个IMG_这个格式。
+            return saveBitmap(bitmap, path, "IMG_" + picName);//手机一般都是有个IMG_这个格式。
         }
         return null;
     }
@@ -374,5 +374,25 @@ public class KFileUtils {
         return file;
     }
 
+    //获得某目录下文件总大小
+    public static double getDirSize(File file) {
+        //判断文件是否存在
+        if (file.exists()) {
+            //如果是目录则递归计算其内容的总大小
+            if (file.isDirectory()) {
+                File[] children = file.listFiles();
+                double size = 0;
+                for (File f : children)
+                    size += getDirSize(f);
+                return size;
+            } else {//如果是文件则直接返回其大小,以“B”为单位
+                double size = (double) file.length();
+                return size;
+            }
+        } else {
+            //System.out.println("文件或者文件夹不存在，请检查路径是否正确！");
+            return 0.0;
+        }
+    }
 
 }

@@ -164,4 +164,69 @@ object KStringUtils {
         return s1
     }
 
+
+    /**
+     * 计算大小,单位根据文件大小情况返回。返回结果带有单位。
+     *
+     * @param data 数据大小
+     * @return
+     */
+    fun getDataSize(data: Double): String? {
+        var data = data
+        if (data < 1024 && data >= 0) {
+            return doubleString(data,num = 2,isKeep0 = false) + "B"
+        } else if (data >= 1024 && data < 1024 * 1024) {
+            data = data / 1024
+            return doubleString(data,num = 2,isKeep0 = false) + "KB"
+        } else if (data >= 1024 * 1024) {
+            data = data / 1024.0 / 1024.0
+            return doubleString(data,num = 2,isKeep0 = false) + "MB"
+        }
+        return null
+    }
+
+    /**
+     * @param data 单位MB。返回的结果不会带有MB两个字。返回格式 "0.00"
+     * @return
+     */
+    fun getDataSizeMB(data: Double): Double? {
+        var format = DecimalFormat("0.00")// 格式
+        var data = data
+        data = data / 1024.0 / 1024.0
+        data = java.lang.Double.parseDouble(format.format(data))
+        return data
+    }
+
+    /**
+     * 计算百分比
+     *
+     * @param curent     当前数值
+     * @param total 总数值
+     * @param keep  保留小数个数。0不保留小数，1小数一位，2小数2位。最大支持小数后四位
+     * @return 返回百分比字符串。自带%百分比符合。
+     */
+    fun getPercent(curent: Long, total: Long, keep: Int = 2): String {
+        var result = ""// 接受百分比的值
+        val x_double = curent * 1.0
+        val tempresult = curent / total.toDouble()
+        // NumberFormat nf = NumberFormat.getPercentInstance(); 注释掉的也是一种方法
+        // nf.setMinimumFractionDigits( 2 ); 保留到小数点后几位
+        var df1: DecimalFormat? = null
+        if (keep <= 0) {
+            df1 = DecimalFormat("0%")
+        } else if (keep == 1) {
+            df1 = DecimalFormat("0.0%")
+        } else if (keep == 2) {
+            df1 = DecimalFormat("0.00%") // ##.00%
+        } else if (keep == 3) {
+            df1 = DecimalFormat("0.000%") // ##.00%
+        } else if (keep >= 4) {
+            df1 = DecimalFormat("0.0000%") // ##.00%
+        }
+        // 百分比格式，后面不足2位的用0补齐
+        // result=nf.format(tempresult);
+        result = df1!!.format(tempresult)
+        return result
+    }
+
 }
