@@ -315,7 +315,7 @@ object KPictureUtils {
                     file = File(photoPath)
                 } else {
                     //没有SD卡权限（不能操作原始图片）
-                    var f = KCacheUtils.getInstance().getAsString(photoPath)
+                    var f = KCachesUtils.getString(photoPath)
                     f?.let {
                         file = File(it)//获取缓存文件，避免重复创建。
                         file?.let {
@@ -334,7 +334,11 @@ object KPictureUtils {
                         // 将Uri图片的内容复制到file上
                         writeFile(activity.getContentResolver(),
                                 file, uri)
-                        KCacheUtils.getInstance().put(photoPath, file?.getPath())//存储文件路径
+                        photoPath?.let {
+                            file?.getPath()?.apply {
+                                KCachesUtils.put(it, this)//存储文件路径
+                            }
+                        }
                     }
                 }
                 cllback?.let {
@@ -406,23 +410,27 @@ object KPictureUtils {
         }
     }
 
-    //文件路径【相机不能使用私有目录，必须使用sd卡。这个sd卡区域，不需要权限哦】
+    //文件路径[需要file_paths.xml才能访问]
+    //相机拍摄的图片会保存在该位置。
     fun getAppCaclePath(context: Context): String {
         //defaultConfig {
         //targetSdkVersion 23//getExternalFilesDir才能正常访问，无需权限。但是如果是22及以下。就需要开启SD卡读取权限。
         //}
         //return getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
-        return context.getFilesDir().getAbsoluteFile().getAbsolutePath() + "/cache"
+        //return context.getFilesDir().getAbsoluteFile().getAbsolutePath() + "/cache"
+        return KCachesUtils.getCachePath() + "/img"
     }
 
     //视频录制路径
     fun getAppVideoPath(context: Context): String {
-        return context.getFilesDir().getAbsoluteFile().getAbsolutePath() + "/video"
+        //return context.getFilesDir().getAbsoluteFile().getAbsolutePath() + "/video"
+        return KCachesUtils.getCachePath() + "/video"
     }
 
     //文件裁剪路径
     fun getAppCropPath(context: Context): String {
-        return context.getFilesDir().getAbsoluteFile().getAbsolutePath() + "/crop"
+        //return context.getFilesDir().getAbsoluteFile().getAbsolutePath() + "/crop"
+        return KCachesUtils.getCachePath() + "/crop"
     }
 
     //获取相册图片路径

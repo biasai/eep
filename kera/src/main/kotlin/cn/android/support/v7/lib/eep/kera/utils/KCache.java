@@ -33,8 +33,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import cn.android.support.v7.lib.eep.kera.base.KApplication;
-
 
 /**
  * 数据是保存在本地，即使app卸载了，只要本地文件还在，数据依然在。保存数据的时候，如果没指定时间的话，默认永久保存。
@@ -42,38 +40,48 @@ import cn.android.support.v7.lib.eep.kera.base.KApplication;
  * 这个缓存类数据可以跨进程，不同进程使用的是不同的内存区域，而这个缓存是直接对数据进行持久化【数据写人磁盘】操作的，所以可以跨进程。因为是持久化操作，所以尽量不要再UI线程中使用
  * 并且里面还有保存时间的设置，精确到单位秒。亲测可用。
  */
-public class KCacheUtils {
-    public static KCacheUtils cache;
+public class KCache {
+    public static KCache cache;
 
     //初始化
-    public static KCacheUtils getInstance() {
+    public static KCache getInstance() {
         if (cache == null) {
             //cache = KCacheUtils.get(KApplication.getInstance().getFilesDir().getAbsoluteFile());
-            cache = KCacheUtils.get(KCachesUtils.INSTANCE.getCacheDir());
+            cache = KCache.get(KCachesUtils.INSTANCE.getCacheDir());
         }
         return cache;
+    }
+
+    public static KCache cacheSecret;
+
+    public static KCache getInstanceSecret() {
+        if (cacheSecret == null) {
+            //cache = KCacheUtils.get(KApplication.getInstance().getFilesDir().getAbsoluteFile());
+            cacheSecret = KCache.get(KCachesUtils.INSTANCE.getCacheDirSecret());
+        }
+        return cacheSecret;
     }
 
     public static final int TIME_HOUR = 60 * 60;//1小时
     public static final int TIME_DAY = TIME_HOUR * 24;//一天
     //private static final int MAX_SIZE = 1000 * 1000 * 50; // 50 mb
-    private static final int MAX_SIZE = 1000 * 1000 * 5000; // 5000 MB,最大存储大小
-    private static final int MAX_COUNT = Integer.MAX_VALUE; // 不限制存放数据的数量
-    private static Map<String, KCacheUtils> mInstanceMap = new HashMap<String, KCacheUtils>();
+    private static final int MAX_SIZE = 1000 * 1000 * 5000; //fixme  5000 MB,最大存储大小
+    private static final int MAX_COUNT = Integer.MAX_VALUE; //fixme  不限制存放数据的数量
+    private static Map<String, KCache> mInstanceMap = new HashMap<String, KCache>();
     private ACacheUtilManager mCache;
 
     /**
      * @param cacheDir 缓存目录
      * @return
      */
-    public static KCacheUtils get(File cacheDir) {
+    public static KCache get(File cacheDir) {
         return get(cacheDir, MAX_SIZE, MAX_COUNT);
     }
 
-    private static KCacheUtils get(File cacheDir, long max_zise, int max_count) {
-        KCacheUtils manager = mInstanceMap.get(cacheDir.getAbsoluteFile() + myPid());
+    private static KCache get(File cacheDir, long max_zise, int max_count) {
+        KCache manager = mInstanceMap.get(cacheDir.getAbsoluteFile() + myPid());
         if (manager == null) {
-            manager = new KCacheUtils(cacheDir, max_zise, max_count);
+            manager = new KCache(cacheDir, max_zise, max_count);
             mInstanceMap.put(cacheDir.getAbsolutePath() + myPid(), manager);
         }
         return manager;
@@ -83,7 +91,7 @@ public class KCacheUtils {
         return "_" + android.os.Process.myPid();
     }
 
-    private KCacheUtils(File cacheDir, long max_size, int max_count) {
+    private KCache(File cacheDir, long max_size, int max_count) {
         if (!cacheDir.exists() && !cacheDir.mkdirs()) {
             throw new RuntimeException("can't make dirs in "
                     + cacheDir.getAbsolutePath());

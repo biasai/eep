@@ -1,7 +1,7 @@
 package cn.android.support.v7.lib.eep.kera.https.ok
 
 import cn.android.support.v7.lib.eep.kera.https.KHttp
-import cn.android.support.v7.lib.eep.kera.utils.KCacheUtils
+import cn.android.support.v7.lib.eep.kera.utils.KCachesUtils
 
 /**
  * Created by 彭治铭 on 2018/6/6.
@@ -31,7 +31,7 @@ abstract class KGenericsCallback(var https: KHttps? = null) {
             if (it.cacle ?: false) {
                 KHttp.getUrlUnique(it)?.let {
                     //缓存数据
-                    KCacheUtils.getInstance().put(it, result)
+                    KCachesUtils.put(it, result)
                 }
             }
         }
@@ -52,7 +52,7 @@ abstract class KGenericsCallback(var https: KHttps? = null) {
             if (it.cacle ?: false) {
                 KHttp.getUrlUnique(it)?.let {
                     //读取缓存数据
-                    response = KCacheUtils.getInstance().getAsString(it)
+                    response = KCachesUtils.getString(it)
                 }
             }
         }

@@ -6,6 +6,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -394,31 +395,30 @@ public class KBounceScrollView extends NestedScrollView {
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);
-        if (scrollViewForTabListener != null) {
-            scrollViewForTabListener.onScrollChanged(this, l, t, oldl, oldt);
+        if (onScrollChanged != null) {
+            onScrollChanged.onScrollChanged(l, t, oldl, oldt);
         }
-
     }
 
-    private ScrollViewForTabListener scrollViewForTabListener;
+    private OnScrollChanged onScrollChanged;
 
     //fixme 接口，监听Scroll的滑动状态改变。滑动坐标。
-    public void setScrollViewForTabListener(ScrollViewForTabListener scrollViewForTabListener) {
-        this.scrollViewForTabListener = scrollViewForTabListener;
+    public void onScrollChanged(OnScrollChanged onScrollChanged) {
+        this.onScrollChanged = onScrollChanged;
     }
 
-    public interface ScrollViewForTabListener {
+    public interface OnScrollChanged {
         //x,y是当前scroll滑动的坐标,oldx,oldy是记录上一次的滑动坐标。
-        void onScrollChanged(KBounceScrollView bounceScrollView, int x, int y, int oldx, int oldy);
+        void onScrollChanged(int x, int y, int oldx, int oldy);
     }
 //    调用案例。（Kotlin自带高阶函数）
-//                setScrollViewForTabListener { bounceScrollView, x, y, oldx, oldy ->
-//                    Log.e("test","x:\t"+x+"\ty:\t"+y+"\toldx:\t"+oldx+"\toldy:\t"+oldy)
-//                    if(y>oldy){
-//                        //向下滚动（下面的内容显示出来。）
-//                    }else if(y<oldy){
-//                        //向上滚动（上面的内容显示出来）
-//                    }
-//                }
+//    onScrollChanged { x, y, oldx, oldy ->
+//        //y就是当前滑动的y坐标值，oldy就是上一次滑动的坐标值
+//        if (y > oldy) {
+//            //向下滚动（下面的内容显示出来。）
+//        } else if (y < oldy) {
+//            //向上滚动（上面的内容显示出来）
+//        }
+//    }
 
 }

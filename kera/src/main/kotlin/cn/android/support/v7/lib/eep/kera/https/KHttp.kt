@@ -8,7 +8,7 @@ import cn.android.support.v7.lib.eep.kera.common.kpx
 import cn.android.support.v7.lib.eep.kera.https.ok.KGenericsCallback
 import cn.android.support.v7.lib.eep.kera.https.ok.KHttps
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
-import cn.android.support.v7.lib.eep.kera.utils.KCacheUtils
+import cn.android.support.v7.lib.eep.kera.utils.KCachesUtils
 import kotlinx.coroutines.experimental.async
 import java.io.*
 import java.net.HttpURLConnection
@@ -287,7 +287,7 @@ object KHttp {
                 }
                 if (it.cacle) {
                     //fixme 读取缓存[网络位图，优先从本地读取]
-                    var bitmap: Bitmap? = KCacheUtils.getInstance().getAsBitmap(it.getUrlUnique() + getWH(w, h), it.optionsRGB_565);//此次对UtilCache进行优化，内部使用了UtilAssets。优化了位图。
+                    var bitmap: Bitmap? = KCachesUtils.getBitmap(it.getUrlUnique() + getWH(w, h), it.optionsRGB_565);//此次对UtilCache进行优化，内部使用了UtilAssets。优化了位图。
                     if (bitmap != null && !bitmap.isRecycled) {
                         //fixme 成功
                         activity?.runOnUiThread {
@@ -379,10 +379,10 @@ object KHttp {
                                     if (w > 0 && h > 0 && w < 10000 && h < 10000) {
                                         result = kpx.GeomeBitmap(it, w.toFloat(), h.toFloat(), isRecycle = true)
                                         //fixme 保存指定宽度和高度位图
-                                        KCacheUtils.getInstance().put(requestParams.getUrlUnique() + getWH(w, h), result)
+                                        KCachesUtils.put(requestParams.getUrlUnique() + getWH(w, h), result)
                                     } else {
                                         //fixme 服务器原图，(0就是原图尺寸的标志)
-                                        KCacheUtils.getInstance().put(requestParams.getUrlUnique() + getWH(), result)
+                                        KCachesUtils.put(requestParams.getUrlUnique() + getWH(), result)
                                     }
                                 }
                             }

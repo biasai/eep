@@ -3,6 +3,7 @@ package cn.android.support.v7.lib.eep.kera.utils
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import cn.android.support.v7.lib.eep.kera.base.KApplication
+import kotlinx.coroutines.experimental.async
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -10,11 +11,21 @@ import java.io.Serializable
 
 /**
  * Created by 彭治铭 on 2018/10/25.
+ * fixme 应用卸载之后，数据会自动清除。只有卸载才会清除。重新安装不会清除
+ * fixme 新安装的apk版本号必须大于当前，才是重新安装。如果版本号相同，就是覆盖安装(会先卸载再安装)。数据同样会清除。
+ * fixme 高版本覆盖低版本，是重新安装。不会发生卸载。只要不卸载。数据就不会丢失。
  */
 object KCachesUtils {
 
-    private fun getCache(): KCacheUtils {
-        return KCacheUtils.getInstance()
+    //公用缓存目录
+    fun getCache(): KCache {
+        return KCache.getInstance()
+    }
+
+
+    //fixme 私用缓存目录。主要用于缓存用户数据。将用户数据和普通的缓存数据分开。
+    fun getCacheSecret(): KCache {
+        return KCache.getInstanceSecret()
     }
 
     //存储时间，亲测有效。单位秒。即1就代表一秒
@@ -24,15 +35,31 @@ object KCachesUtils {
     val TIME_MONTH = TIME_DAY * 30//大约一个月
     val TIME_YEAR = TIME_MONTH * 12//大约一年
 
+//    defaultConfig {
+//        //6.0是23。即在此必须设置成23及以上，getExternalFilesDir()就不需要权限。getExternal获取的SD卡的路径。
+//        //22及以下。getExternalFilesDir()仍然需要权限。
+//        targetSdkVersion 23
+//    }
+
     //缓存目录
     fun getCacheDir(): File {
         //KCacheUtils.get(KApplication.getInstance().getFilesDir().getAbsoluteFile());//这个是之前用的。
         return KApplication.getInstance().cacheDir
     }
 
-    //缓存目录的路径
+    //缓存目录的路径,不需要SD卡权限
     fun getCachePath(): String {
-        return getCacheDir().absolutePath
+        return getCacheDir().absolutePath//fixme 在应用cache目录下，如：/data/user/0/com.应用包名/cache
+    }
+
+    //fixme 私有缓存目录
+    fun getCacheDirSecret(): File {
+        return KApplication.getInstance().getFilesDir()
+    }
+
+    //fixme 私有缓存目录的路径,不需要SD卡权限
+    fun getCachePathSecret(): String {
+        return getCacheDirSecret().absolutePath//fixme 在应用files目录下。如：/data/user/0/com.应用包名/files
     }
 
     //获取缓存目录大小
@@ -40,6 +67,23 @@ object KCachesUtils {
     fun getCacheSize(): String {
         var size = KFileUtils.getDirSize(getCacheDir())
         return KStringUtils.getDataSize(size) ?: "0KB"
+    }
+
+    //获取缓存目录大小,单位B
+    fun getCacheSizeDouble(): Double {
+        return KFileUtils.getDirSize(getCacheDir())
+    }
+
+    //fixme 获取私有缓存目录大小
+    //计算大小,单位根据文件大小情况返回。返回结果带有单位。
+    fun getCacheSizeSecret(): String {
+        var size = KFileUtils.getDirSize(getCacheDirSecret())
+        return KStringUtils.getDataSize(size) ?: "0KB"
+    }
+
+    //fixme 获取私有缓存目录大小,单位B
+    fun getCacheSizeDoubleSecret(): Double {
+        return KFileUtils.getDirSize(getCacheDirSecret())
     }
 
     //逗号分隔符
@@ -67,15 +111,49 @@ object KCachesUtils {
     private var markJSONArray = "KCachesUtils_JSONArray"
     //json对象
     private var markJSONObject = "KCachesUtils_JSONObject"
+    //MutableList标志
+    var markMutableList = "KCachesUtils_MutableList"
 
-    //清除所有缓存
-    fun clear() {
-        clearAll()
+    //fixme 清除所有公共缓存[不包含私有缓存],防止删除的文件过大，防止耗时。所以加了协程和回调。
+    fun clearCache(callback: (() -> Unit)? = null) {
+        async {
+            getCache().clear()
+            callback?.let {
+                it()//删除完成回调
+            }
+        }
     }
 
-    //清除所有缓存
-    fun clearAll() {
-        getCache().clear()
+    //清除所有公共缓存[不包含私有缓存]
+    fun clearCacheAll(callback: (() -> Unit)? = null) {
+        async {
+            getCache().clear()
+            KFileUtils.getInstance().delAllFiles(getCachePath())//fixme 删除该文件夹下的所有文件夹和文件
+            callback?.let {
+                it()//删除完成回调
+            }
+        }
+    }
+
+    //清除私有缓存目录
+    fun clearCacheSecret(callback: (() -> Unit)? = null) {
+        async {
+            getCacheSecret().clear()
+            callback?.let {
+                it()//删除完成回调
+            }
+        }
+    }
+
+    //清除私有缓存目录，包括该目录下的所有目录
+    fun clearCacheSecretAll(callback: (() -> Unit)? = null) {
+        async {
+            getCacheSecret().clear()
+            KFileUtils.getInstance().delAllFiles(getCachePathSecret())//fixme 删除该文件夹下的所有文件夹和文件
+            callback?.let {
+                it()//删除完成回调
+            }
+        }
     }
 
     //清除所有字符串
@@ -133,8 +211,13 @@ object KCachesUtils {
         removeMark(markJSONObject)
     }
 
+    //清除所有MutableList对象
+    fun clearMutableList() {
+        removeMark(markMutableList)
+    }
+
     //存储标志
-    private fun putMark(key: String, marks: String) {
+    fun putMark(key: String, marks: String) {
         var mark: String? = getCache().getAsString(marks)
         if (mark == null) {
             getCache().put(marks, key)
@@ -145,7 +228,7 @@ object KCachesUtils {
     }
 
     //移除标志
-    private fun removeMark(key: String) {
+    fun removeMark(key: String) {
         var mark: String? = getCache().getAsString(key)
         //KLoggerUtils.e("test","所有移除标志:\t"+mark)
         mark?.let {
@@ -182,8 +265,8 @@ object KCachesUtils {
      * @param value    保存的String数据
      * @param saveTime 保存的时间，单位：秒
      */
-    fun putString(key: String, value: String?, saveTime: Int?) {
-        if (value != null && value.length > 0 && key.trim().length > 0) {
+    fun putString(key: String?, value: String?, saveTime: Int?) {
+        if (key != null && value != null && value.length > 0 && key.trim().length > 0) {
             if (saveTime != null && saveTime > 0) {
                 getCache().put(key, value, saveTime)//有存储时间限制
             } else {
@@ -191,13 +274,13 @@ object KCachesUtils {
             }
             putMark(key, markString)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
     //获取字符串
-    fun getString(key: String): String? {
-        if (key.trim().length > 0) {
+    fun getString(key: String?): String? {
+        if (key != null && key.trim().length > 0) {
             return getCache().getAsString(key)
         }
         return null
@@ -234,7 +317,7 @@ object KCachesUtils {
             }
             putMark(key, markInt)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -279,7 +362,7 @@ object KCachesUtils {
             }
             putMark(key, markFloat)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -324,7 +407,7 @@ object KCachesUtils {
             }
             putMark(key, markDouble)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -369,7 +452,7 @@ object KCachesUtils {
             }
             putMark(key, markLong)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -414,7 +497,7 @@ object KCachesUtils {
             }
             putMark(key, markAny)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -456,7 +539,7 @@ object KCachesUtils {
             }
             putMark(key, markBitmap)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -502,7 +585,7 @@ object KCachesUtils {
             }
             putMark(key, markDrawable)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -544,7 +627,7 @@ object KCachesUtils {
             }
             putMark(key, markByteArray)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -586,7 +669,7 @@ object KCachesUtils {
             }
             putMark(key, markJSONArray)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -628,7 +711,7 @@ object KCachesUtils {
             }
             putMark(key, markJSONObject)
         } else {
-            KCacheUtils.getInstance().remove(key)
+            getCache().remove(key)
         }
     }
 
@@ -639,4 +722,101 @@ object KCachesUtils {
         }
         return null
     }
+
+
+    //fixme========================================================================================= List类型 12
+
+    //fixme 调用实例：KCachesUtils.put("MYLIST",list),直接传一个list对象即可
+    inline fun <reified T : Any> put(key: String, value: MutableList<T>?) {
+        putMutableList(key, value, null)
+    }
+
+    inline fun <reified T : Any> put(key: String, value: MutableList<T>?, saveTime: Int?) {
+        putMutableList(key, value, saveTime)
+    }
+
+    inline fun <reified T : Any> put(key: String, value: ArrayList<T>?) {
+        putMutableList(key, value, null)
+    }
+
+    inline fun <reified T : Any> put(key: String, value: ArrayList<T>?, saveTime: Int?) {
+        putMutableList(key, value, saveTime)
+    }
+
+    inline fun <reified T : Any> putMutableList(key: String, value: MutableList<T>?) {
+        putMutableList(key, value, null)
+    }
+
+    //fixme 调用实例：var text=KCachesUtils.getMutableList<TestBean>("MYLIST")，只需要写MutableList内部泛型即可。
+    /**
+     * 保存 MutableList数据 到 缓存中
+     *
+     * fixme MutableList和ArrayList两个都可以。ArrayList可以转化成MutableList
+     * fixme 即MutableList兼容ArrayList
+     *
+     * @param key      保存的key
+     * @param value    保存的String数据
+     * @param saveTime 保存的时间，单位：秒
+     */
+    inline fun <reified T : Any> putMutableList(key: String, value: MutableList<T>?, saveTime: Int?) {
+        if (value != null && value.size > 0 && key.trim().length > 0) {
+            var value2 = KGsonUtils.parseJSONArray(value).toString()
+            //KLoggerUtils.e("test","保存数组:\t"+value2)
+            if (saveTime != null && saveTime > 0) {
+                getCache().put(key, value2, saveTime)//有存储时间限制
+            } else {
+                getCache().put(key, value2)//fixme 没有时间限制。即永久保存。
+            }
+            putMark(key, markMutableList)
+        } else {
+            getCache().remove(key)
+        }
+    }
+
+    //获取MutableList数组
+    inline fun <reified T : Any> getMutableList(key: String): MutableList<T>? {
+        if (key.trim().length > 0) {
+            var jsonArray: String? = getCache().getAsString(key)
+            //KLoggerUtils.e("test","获取数组:\t"+jsonArray)
+            jsonArray?.let {
+                return KGsonUtils.parseAny<MutableList<T>>(jsonArray)
+            }
+        }
+        return null
+    }
+
+    //fixme========================================================================================= Serializable序列化对象 13 私有目录。和缓存目录不是同一个目录
+
+    fun putSecret(key: String, value: Serializable?) {
+        putSecret(key, value, null)
+    }
+
+    /**
+     * 保存 数据 到 缓存中
+     *
+     * @param key      保存的key
+     * @param value    保存的数据
+     * @param saveTime 保存的时间，单位：秒
+     */
+    fun putSecret(key: String, value: Serializable?, saveTime: Int?) {
+        if (value != null && key.trim().length > 0) {
+            if (saveTime != null && saveTime > 0) {
+                getCacheSecret().put(key, value, saveTime)//有存储时间限制
+            } else {
+                getCacheSecret().put(key, value)//fixme 没有时间限制。即永久保存。
+            }
+        } else {
+            getCacheSecret().remove(key)
+        }
+    }
+
+    //获取可序列化Serializable对象
+    fun getSecret(key: String): Any? {
+        if (key.trim().length > 0) {
+            return getCacheSecret().getAsObject(key)
+        }
+        return null
+    }
+
+
 }
