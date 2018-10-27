@@ -1,15 +1,22 @@
 package cn.android.support.v7.lib.eep.kera.widget
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.util.AttributeSet
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import cn.android.support.v7.lib.eep.kera.base.KView
+import cn.android.support.v7.lib.eep.kera.common.kpx
+import cn.android.support.v7.lib.eep.kera.https.KBitmaps
+import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
 import cn.android.support.v7.lib.eep.kera.widget.KBounceScrollView
 import org.jetbrains.anko.backgroundDrawable
+import org.jetbrains.anko.runOnUiThread
 
 /**
  * 背景颜色渐变的弹性ScrollView
@@ -165,7 +172,7 @@ open class KGradientScrollView : KBounceScrollView {
 
     override fun draw(canvas: Canvas?) {
         canvas?.apply {
-            var paint = Paint()
+            var paint = KView.getPaint()
             paint.isAntiAlias = true
             paint.isDither = true
             paint.style = Paint.Style.FILL_AND_STROKE
@@ -235,6 +242,9 @@ open class KGradientScrollView : KBounceScrollView {
                 drawPaint(paint)
             }
 
+            //fixme 画拉伸图片。backgroundColor=Color.RED背景色会覆盖拉伸图片。
+            //fixme scrollview移动的时候。画布也在一起移动。所以拉伸图片也会随scrollview一起滚动。
+            drawAutoMatrixBg(canvas,paint)
         }
         super.draw(canvas)//在下面。不然内容会被覆盖【这里是ScrollView内部的子控件】
 
@@ -354,6 +364,246 @@ open class KGradientScrollView : KBounceScrollView {
                 paint.style = Paint.Style.FILL_AND_STROKE
                 paint.strokeWidth = 0f
                 it(canvas, paint)
+            }
+        }
+    }
+
+    //fixme ========================================================================================以下是图片拉伸效果
+
+    var w: Int = 0//获取控件的真实宽度
+        get() {
+            var w = width
+            if (layoutParams != null && layoutParams.width > w) {
+                w = layoutParams.width
+            }
+            return w
+        }
+
+    var h: Int = 0//获取控件的真实高度
+        get() {
+            var h = height
+            if (layoutParams != null && layoutParams.height > h) {
+                h = layoutParams.height
+            }
+            return h
+        }
+
+    var autoLeftPadding = 0f//左补丁(负数也有效哦)
+    var autoTopPadding = 0f//上补丁
+    var isAutoCenter = false//位图是否居中,（水平+垂直居中）
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenterHorizontal = false
+                isAutoCenterVertical = false
+            }
+        }
+    var isAutoCenterHorizontal = true//fixme 水平居中,默认
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenter = false
+                isAutoCenterVertical = false
+            }
+        }
+    var isAutoCenterVertical = false//垂直居中
+        set(value) {
+            field = value
+            if (field) {
+                isAutoCenter = false
+                isAutoCenterHorizontal = false
+            }
+        }
+
+    //这个背景图片，会铺满整个控件。不会对位图进行适配。只会对图片矩阵（拉伸）处理。就和背景图片一样
+    private var autoMatrixBg: Bitmap? = null
+
+    //设置控件的高度和高度
+    // matchParent:	-1 wrapContent:	-2
+    open fun layoutParams(width: Int, height: Int) {
+        layoutParams?.apply {
+            //设置宽和高
+            this.width = width
+            this.height = height
+            requestLayout()
+        }
+    }
+
+    //记录autoMatrixBg拉伸之后的宽度和高度
+    var autoMatrixBgWidth: Int = 0
+    var autoMatrixBgHeight: Int = 0
+    //设置矩阵的宽和高，不是图片。对图片继续拉伸处理
+    //fixme 设置矩阵拉伸后的宽度和高度,参数Int是实际拉伸后的宽度和高度
+    open fun autoMatrixBgScale(width: Int = this.w, height: Int = this.h) {
+        autoMatrixBg?.let {
+            if (!it.isRecycled){
+                autoMatrixBgWidth = width
+                autoMatrixBgHeight = height
+                invalidate()
+            }
+        }
+    }
+
+    //fixme 设置矩阵拉伸后的比率。1是原图的比率。,参数Float是实际拉伸后的比率。实际宽度和高度。会自行计算
+    open fun autoMatrixBgScale(sx: Float = 1f, sy: Float = 1f) {
+        autoMatrixBg?.apply {
+            if (!isRecycled) {
+                autoMatrixBgWidth = (width * sx).toInt()
+                autoMatrixBgHeight = (height * sy).toInt()
+                invalidate()
+            }
+        }
+    }
+
+    /**
+     * 拉伸图片。会随ScrollView的滚动而滚动。因为scrollView滚动的时候。整个画布也在移动。
+     */
+    open fun drawAutoMatrixBg(canvas: Canvas, paint: Paint) {
+        autoMatrixBg?.apply {
+            if (!isRecycled) {
+                paint.isAntiAlias = true
+                paint.isDither = true
+                if (autoMatrixBgWidth <= 0) {
+                    autoMatrixBgWidth = width
+                }
+                if (autoMatrixBgHeight <= 0) {
+                    autoMatrixBgHeight = height
+                }
+                var offsetLeft = (autoMatrixBgWidth - width) / 2
+                var offsetTop = (autoMatrixBgHeight - height) / 2
+                if (isAutoCenter) {
+                    //canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                    var left = kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding - offsetLeft
+                    var top = kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding - offsetTop
+                    var right = left + autoMatrixBgWidth
+                    var bottom = top + autoMatrixBgHeight
+                    canvas.drawBitmap(this, null, RectF(left, top, right, bottom), paint)
+                } else if (isAutoCenterHorizontal) {
+                    //canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                    var left = kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding - offsetLeft
+                    var top = autoTopPadding - offsetTop
+                    var right = left + autoMatrixBgWidth
+                    var bottom = top + autoMatrixBgHeight
+                    canvas.drawBitmap(this, null, RectF(left, top, right, bottom), paint)
+                } else if (isAutoCenterVertical) {
+                    //canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                    var left = autoLeftPadding - offsetLeft
+                    var top = kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding - offsetTop
+                    var right = left + autoMatrixBgWidth
+                    var bottom = top + autoMatrixBgHeight
+                    canvas.drawBitmap(this, null, RectF(left, top, right, bottom), paint)
+                } else {
+                    //canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
+                    var left = autoLeftPadding - offsetLeft
+                    var top = autoTopPadding - offsetTop
+                    var right = left + autoMatrixBgWidth
+                    var bottom = top + autoMatrixBgHeight
+                    canvas.drawBitmap(this, null, RectF(left, top, right, bottom), paint)
+                }
+            }
+        }
+    }
+
+    fun autoMatrixBg(bitmap: Bitmap?) {
+        this.autoMatrixBg = bitmap
+        if (context != null && context is Activity) {
+            context.runOnUiThread {
+                invalidate()
+            }
+        }
+    }
+
+    fun autoMatrixBg(resId: Int, width: Int=0, height: Int=0, isRGB_565: Boolean = false) {
+        this.autoMatrixBg = KAssetsUtils.getInstance().getBitmapFromAssets(null, resId, isRGB_565)
+        if (width>=0&&height>=0){
+            autoMatrixBg?.let {
+                if (!it.isRecycled){
+                    autoMatrixBg= kpx.xBitmap(it,width,height,true)
+                }
+            }
+        }
+        if (context != null && context is Activity) {
+            context.runOnUiThread {
+                invalidate()
+            }
+        }
+    }
+
+    fun autoMatrixBgFromAssets(assetsPath: String, width: Int=0, height: Int=0, isRGB_565: Boolean = false) {
+        this.autoMatrixBg = KAssetsUtils.getInstance().getBitmapFromAssets(assetsPath, 0, isRGB_565)
+        if (width>=0&&height>=0){
+            autoMatrixBg?.let {
+                if (!it.isRecycled){
+                    autoMatrixBg= kpx.xBitmap(it,width,height,true)
+                }
+            }
+        }
+        if (context != null && context is Activity) {
+            context.runOnUiThread {
+                invalidate()
+            }
+        }
+    }
+
+    /**
+     * @param url 网络地址
+     * @param width 位图的宽度,默认0是服务器原图的尺寸（之后不会对位图进行适配，只会进行拉伸处理）。
+     * @param height 位图的高度
+     * @param isLoad 是否显示进度条
+     * @param isRepeat 网络是否允许重复加载
+     */
+    fun autoMatrixBgFromUrl(url: String?, width: Int=0, height: Int=0, isLoad: Boolean = false, isRepeat: Boolean = false,finish:((bitmap:Bitmap)->Unit)?=null) {
+        //Log.e("test", "宽度和高度:\t" + width + "\t" + height)
+        if (isLoad && context != null && context is Activity) {
+            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).width(width).height(height).get() {
+                autoMatrixBg = it
+                if (context != null && context is Activity) {
+                    context.runOnUiThread {
+                        invalidate()
+                        finish?.let {
+                            autoMatrixBg?.apply {
+                                if (!isRecycled){
+                                    it(this)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).width(width).height(height).get() {
+                //Log.e("test", "成功:\t" + it.width)
+                autoMatrixBg = it
+                if (context != null && context is Activity) {
+                    context.runOnUiThread {
+                        invalidate()
+                        finish?.let {
+                            autoMatrixBg?.apply {
+                                if (!isRecycled){
+                                    it(this)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //fixme scrollview移动的时候。画布也在一起移动。所以拉伸图片也会随scrollview一起滚动。
+    // fixme 所以，再次就做下拉放大的效果。上滑的效果。基本不需要（图片都滑上去了，都看不到了）。所以就不做了。
+    var maxAutoMatrixBgScaleSeed=2f//fixme 图片拉伸率。数字越大。变化越大。2是等距离变大(滑动多少就变大多少)。不过感觉还为1的时候，效果最好。
+    //fixme 下拉时，图片会放大。下拉越大。图片拉伸越大。
+    //fixme 点击事件，直接在scrollview布局顶部添加一个透明控件。给改控件添加事件即可。
+    override fun onDropDownAutoMatrixBg(distance: Int) {
+        super.onDropDownAutoMatrixBg(distance)
+        autoMatrixBg?.let {
+            if (!it.isRecycled){
+                //var sx=(distance.toFloat()/maxMoveHeightDrop_Down.toFloat())*maxAutoMatrixBgScale+1
+                //Log.e("test","拉伸比例:\t"+sx)
+                var height2=it.height+distance*maxAutoMatrixBgScaleSeed
+                var width2=it.width*(height2.toFloat()/it.height.toFloat())
+                autoMatrixBgScale(width2.toInt(),height2.toInt())
             }
         }
     }

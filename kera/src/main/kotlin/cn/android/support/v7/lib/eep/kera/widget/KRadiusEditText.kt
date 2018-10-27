@@ -1085,11 +1085,10 @@ open class KRadiusEditText : EditText {
         return flag
     }
 
-    private var onClick: (() -> Unit)? = null
     private var onClickes = mutableListOf<() -> Unit>()
     private var hasClick = false//判断是否已经添加了点击事情。
-    //fixme 自定义点击事件，可以添加多个点击事情。互不影响
-    open fun onClick(onClick: () -> Unit) {
+    //fixme 自定义点击事件，可以添加多个点击事情。互不影响,isMul是否允许添加多个点击事件。默认不允许
+    open fun onClick(isMul:Boolean=false,onClick: () -> Unit) {
         if (!hasClick) {
             isClickable = true//设置具备点击能力
             //点击事件
@@ -1104,6 +1103,10 @@ open class KRadiusEditText : EditText {
                 }
             }
             hasClick = true
+        }
+        if (!isMul){
+            //不允许添加多个点击事件
+            onClickes.clear()//清除之前的点击事件
         }
         onClickes.add(onClick)
     }
@@ -1171,6 +1174,200 @@ open class KRadiusEditText : EditText {
         }
     }
 
+    //这个背景图片，会铺满整个控件。不会对位图进行适配。只会对图片矩阵（拉伸）处理。就和背景图片一样
+    private var autoMatrixBg: Bitmap? = null
+
+    //设置控件的高度和高度
+    // matchParent:	-1 wrapContent:	-2
+    open fun layoutParams(width: Int, height: Int) {
+        layoutParams?.apply {
+            //设置宽和高
+            this.width = width
+            this.height = height
+            requestLayout()
+        }
+    }
+
+    //记录autoMatrixBg拉伸之后的宽度和高度
+    var autoMatrixBgWidth: Int = 0
+    var autoMatrixBgHeight: Int = 0
+    //设置矩阵的宽和高，不是图片。对图片继续拉伸处理
+    //fixme 设置矩阵拉伸后的宽度和高度,参数Int是实际拉伸后的宽度和高度
+    open fun autoMatrixBgScale(width: Int = this.w, height: Int = this.h) {
+        autoMatrixBg?.let {
+            if (!it.isRecycled){
+                autoMatrixBgWidth = width
+                autoMatrixBgHeight = height
+                invalidate()
+            }
+        }
+    }
+
+    //fixme 设置矩阵拉伸后的比率。1是原图的比率。,参数Float是实际拉伸后的比率。实际宽度和高度。会自行计算
+    open fun autoMatrixBgScale(sx: Float = 1f, sy: Float = 1f) {
+        autoMatrixBg?.apply {
+            if (!isRecycled) {
+                autoMatrixBgWidth = (width * sx).toInt()
+                autoMatrixBgHeight = (height * sy).toInt()
+                invalidate()
+            }
+        }
+    }
+
+    open fun drawAutoMatrixBg(canvas: Canvas, paint: Paint) {
+        autoMatrixBg?.apply {
+            if (!isRecycled) {
+                paint.isAntiAlias = true
+                paint.isDither = true
+                if (autoMatrixBgWidth <= 0) {
+                    autoMatrixBgWidth = width
+                }
+                if (autoMatrixBgHeight <= 0) {
+                    autoMatrixBgHeight = height
+                }
+                var offsetLeft = (autoMatrixBgWidth - width) / 2
+                var offsetTop = (autoMatrixBgHeight - height) / 2
+                if (isAutoCenter) {
+                    //canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                    var left = kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding - offsetLeft
+                    var top = kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding - offsetTop
+                    var right = left + autoMatrixBgWidth
+                    var bottom = top + autoMatrixBgHeight
+                    canvas.drawBitmap(this, null, RectF(left, top, right, bottom), paint)
+                } else if (isAutoCenterHorizontal) {
+                    //canvas.drawBitmap(this, kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding, autoTopPadding, paint)
+                    var left = kpx.centerBitmapX(this, w.toFloat()) + autoLeftPadding - offsetLeft
+                    var top = autoTopPadding - offsetTop
+                    var right = left + autoMatrixBgWidth
+                    var bottom = top + autoMatrixBgHeight
+                    canvas.drawBitmap(this, null, RectF(left, top, right, bottom), paint)
+                } else if (isAutoCenterVertical) {
+                    //canvas.drawBitmap(this, autoLeftPadding, kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding, paint)
+                    var left = autoLeftPadding - offsetLeft
+                    var top = kpx.centerBitmapY(this, h.toFloat()) + autoTopPadding - offsetTop
+                    var right = left + autoMatrixBgWidth
+                    var bottom = top + autoMatrixBgHeight
+                    canvas.drawBitmap(this, null, RectF(left, top, right, bottom), paint)
+                } else {
+                    //canvas.drawBitmap(this, autoLeftPadding, autoTopPadding, paint)
+                    var left = autoLeftPadding - offsetLeft
+                    var top = autoTopPadding - offsetTop
+                    var right = left + autoMatrixBgWidth
+                    var bottom = top + autoMatrixBgHeight
+                    canvas.drawBitmap(this, null, RectF(left, top, right, bottom), paint)
+                }
+            }
+        }
+    }
+
+    fun autoMatrixBg(bitmap: Bitmap?) {
+        this.autoMatrixBg = bitmap
+        if (context != null && context is Activity) {
+            context.runOnUiThread {
+                if (isAutoWH) {
+                    requestLayout()
+                } else {
+                    invalidate()
+                }
+            }
+        }
+    }
+
+    fun autoMatrixBg(resId: Int, width: Int=0, height: Int=0, isRGB_565: Boolean = false) {
+        this.autoMatrixBg = KAssetsUtils.getInstance().getBitmapFromAssets(null, resId, isRGB_565)
+        if (width>=0&&height>=0){
+            autoMatrixBg?.let {
+                if (!it.isRecycled){
+                    autoMatrixBg=kpx.xBitmap(it,width,height,true)
+                }
+            }
+        }
+        if (context != null && context is Activity) {
+            context.runOnUiThread {
+                if (isAutoWH) {
+                    requestLayout()
+                } else {
+                    invalidate()
+                }
+            }
+        }
+    }
+
+    fun autoMatrixBgFromAssets(assetsPath: String, width: Int=0, height: Int=0, isRGB_565: Boolean = false) {
+        this.autoMatrixBg = KAssetsUtils.getInstance().getBitmapFromAssets(assetsPath, 0, isRGB_565)
+        if (width>=0&&height>=0){
+            autoMatrixBg?.let {
+                if (!it.isRecycled){
+                    autoMatrixBg=kpx.xBitmap(it,width,height,true)
+                }
+            }
+        }
+        if (context != null && context is Activity) {
+            context.runOnUiThread {
+                if (isAutoWH) {
+                    requestLayout()
+                } else {
+                    invalidate()
+                }
+            }
+        }
+    }
+
+    /**
+     * @param url 网络地址
+     * @param width 位图的宽度,默认0是服务器原图的尺寸（之后不会对位图进行适配，只会进行拉伸处理）。
+     * @param height 位图的高度
+     * @param isLoad 是否显示进度条
+     * @param isRepeat 网络是否允许重复加载
+     */
+    fun autoMatrixBgFromUrl(url: String?, width: Int=0, height: Int=0, isLoad: Boolean = false, isRepeat: Boolean = false,finish:((bitmap:Bitmap)->Unit)?=null) {
+        //Log.e("test", "宽度和高度:\t" + width + "\t" + height)
+        if (isLoad && context != null && context is Activity) {
+            KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).width(width).height(height).get() {
+                autoMatrixBg = it
+                if (context != null && context is Activity) {
+                    context.runOnUiThread {
+                        if (isAutoWH) {
+                            requestLayout()
+                        } else {
+                            invalidate()
+                        }
+                        finish?.let {
+                            autoMatrixBg?.apply {
+                                if (!isRecycled){
+                                    it(this)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            KBitmaps(url).optionsRGB_565(false).showLoad(false).repeat(isRepeat).width(width).height(height).get() {
+                //Log.e("test", "成功:\t" + it.width)
+                autoMatrixBg = it
+                if (context != null && context is Activity) {
+                    context.runOnUiThread {
+                        if (isAutoWH) {
+                            requestLayout()
+                        } else {
+                            invalidate()
+                        }
+                        finish?.let {
+                            autoMatrixBg?.apply {
+                                if (!isRecycled){
+                                    it(this)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+
     //这个背景图片，会铺满整个控件
     private var autoUrlBg: Bitmap? = null//fixme 自定义网络背景图片,对图片是否为空，是否释放，做了判断。防止奔溃。比原生的背景图片更安全。
 
@@ -1178,13 +1375,44 @@ open class KRadiusEditText : EditText {
         this.autoUrlBg = bitmap
         if (context != null && context is Activity) {
             context.runOnUiThread {
-                invalidate()
+                if (isAutoWH) {
+                    requestLayout()
+                } else {
+                    invalidate()
+                }
             }
         }
     }
 
-    fun autoUrlBg(resId: Int, isRGB_565: Boolean = false) {
+    fun autoUrlBg(resId: Int, width: Int=0, height: Int=0,isRGB_565: Boolean = false) {
         this.autoUrlBg = KAssetsUtils.getInstance().getBitmapFromAssets(null, resId, isRGB_565)
+        if (width>=0&&height>=0){
+            autoUrlBg?.let {
+                if (!it.isRecycled){
+                    autoUrlBg=kpx.xBitmap(it,width,height,true)
+                }
+            }
+        }
+        if (context != null && context is Activity) {
+            context.runOnUiThread {
+                if (isAutoWH) {
+                    requestLayout()
+                } else {
+                    invalidate()
+                }
+            }
+        }
+    }
+
+    fun autoUrlBgFromAssets(assetsPath: String,width: Int=0, height: Int=0, isRGB_565: Boolean = false) {
+        this.autoUrlBg = KAssetsUtils.getInstance().getBitmapFromAssets(assetsPath, 0, isRGB_565)
+        if (width>=0&&height>=0){
+            autoUrlBg?.let {
+                if (!it.isRecycled){
+                    autoUrlBg=kpx.xBitmap(it,width,height,true)
+                }
+            }
+        }
         if (context != null && context is Activity) {
             context.runOnUiThread {
                 invalidate()
@@ -1192,14 +1420,6 @@ open class KRadiusEditText : EditText {
         }
     }
 
-    fun autoUrlAssetsBg(assetsPath: String, isRGB_565: Boolean = false) {
-        this.autoUrlBg = KAssetsUtils.getInstance().getBitmapFromAssets(assetsPath, 0, isRGB_565)
-        if (context != null && context is Activity) {
-            context.runOnUiThread {
-                invalidate()
-            }
-        }
-    }
 
     //fixme 防止无法获取宽和高，所以延迟100毫秒，这样就能获取控件的宽度和高度了。
     fun autoUrlBgDelay(url: String?, delay: Long = 100) {
@@ -1217,16 +1437,27 @@ open class KRadiusEditText : EditText {
     /**
      * url 网络图片地址
      * isLoad 是否显示进度条，默认不显示
-     * isRepeat 是否允许重复加载，默认允许
+     * isRepeat 是否允许重复加载（网络重复请求）
      * fixme width,height位图的宽和高(最好手动设置一下，或者延迟一下，不能无法获取宽和高)
      */
-    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = true, width: Int = this.w, height: Int = this.h) {
+    fun autoUrlBg(url: String?, isLoad: Boolean = false, isRepeat: Boolean = false, width: Int = this.w, height: Int = this.h,finish:((bitmap:Bitmap)->Unit)?=null) {
         if (isLoad && context != null && context is Activity) {
             KBitmaps(url).optionsRGB_565(false).showLoad(context as Activity).repeat(isRepeat).width(width).height(height).get() {
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
-                        invalidate()
+                        if (isAutoWH) {
+                            requestLayout()
+                        } else {
+                            invalidate()
+                        }
+                        finish?.let {
+                            autoUrlBg?.apply {
+                                if (!isRecycled){
+                                    it(this)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1236,7 +1467,18 @@ open class KRadiusEditText : EditText {
                 autoUrlBg = it
                 if (context != null && context is Activity) {
                     context.runOnUiThread {
-                        invalidate()
+                        if (isAutoWH) {
+                            requestLayout()
+                        } else {
+                            invalidate()
+                        }
+                        finish?.let {
+                            autoUrlBg?.apply {
+                                if (!isRecycled){
+                                    it(this)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1252,7 +1494,11 @@ open class KRadiusEditText : EditText {
         this.autoDefaultBg = bitmap
         if (context != null && context is Activity) {
             context.runOnUiThread {
-                invalidate()
+                if (isAutoWH) {
+                    requestLayout()
+                } else {
+                    invalidate()
+                }
             }
         }
     }
@@ -1286,7 +1532,11 @@ open class KRadiusEditText : EditText {
         this.autoPressBg = bitmap
         if (context != null && context is Activity) {
             context.runOnUiThread {
-                invalidate()
+                if (isAutoWH) {
+                    requestLayout()
+                } else {
+                    invalidate()
+                }
             }
         }
     }
@@ -1322,7 +1572,11 @@ open class KRadiusEditText : EditText {
         this.autoSelectBg = bitmap
         if (context != null && context is Activity) {
             context.runOnUiThread {
-                invalidate()
+                if (isAutoWH) {
+                    requestLayout()
+                } else {
+                    invalidate()
+                }
             }
         }
     }
@@ -1492,6 +1746,26 @@ open class KRadiusEditText : EditText {
                     }
                 }
             }
+            autoUrlBg?.apply {
+                if (!isRecycled) {
+                    if (width > w) {
+                        w = width
+                    }
+                    if (height > h) {
+                        h = height
+                    }
+                }
+            }
+            autoMatrixBg?.apply {
+                if (!isRecycled) {
+                    if (width > w) {
+                        w = width
+                    }
+                    if (height > h) {
+                        h = height
+                    }
+                }
+            }
         }
         if (w > 0 && h > 0) {
             this.w = w
@@ -1532,6 +1806,7 @@ open class KRadiusEditText : EditText {
             }
         }
 
+    open var isRecycleAutoUrlBg:Boolean=true//图片适配时，是否释放原位图。
     //画自定义背景
     open fun drawAutoBg(canvas: Canvas) {
         if (w <= 0 || h <= 0) {
@@ -1542,7 +1817,7 @@ open class KRadiusEditText : EditText {
         autoUrlBg?.apply {
             if (!isRecycled) {
                 if (width != w || height != h) {
-                    autoUrlBg = kpx.xBitmap(this, w, h, isRecycle = false)//位图和控件拉伸到一样大小
+                    autoUrlBg = kpx.xBitmap(this, w, h, isRecycle = isRecycleAutoUrlBg)//位图和控件拉伸到一样大小
                     autoUrlBg?.apply {
                         if (!isRecycled) {
                             canvas.drawBitmap(this, 0f, 0f, paint)
@@ -1553,6 +1828,8 @@ open class KRadiusEditText : EditText {
                 }
             }
         }
+        //拉伸图片
+        drawAutoMatrixBg(canvas,paint)
         //Log.e("test", "isSelected:\t" + isSelected + "\tisPress：\t" + isPressed)
         if (isSelected && autoSelectBg != null) {
             //选中状态图片,优先级最高
@@ -1605,7 +1882,7 @@ open class KRadiusEditText : EditText {
     }
 
     //释放位图
-    fun recycle() {
+    fun recycleAutoBg() {
         autoDefaultBg?.apply {
             if (!isRecycled) {
                 recycle()
@@ -1630,6 +1907,12 @@ open class KRadiusEditText : EditText {
             }
         }
         autoUrlBg = null
+        autoMatrixBg?.apply {
+            if (!isRecycled) {
+                recycle()
+            }
+        }
+        autoMatrixBg = null
         invalidate()
         System.gc()//提醒内存回收
     }

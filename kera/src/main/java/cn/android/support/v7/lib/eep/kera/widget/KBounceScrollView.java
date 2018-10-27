@@ -16,6 +16,10 @@ import android.view.animation.TranslateAnimation;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.android.support.v7.lib.eep.kera.base.KView;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+
 /**
  * 弹性ScrollView【滑动原理，对scrollview里面的第一个View进行位置上下偏移滑动。】
  * Created by 彭治铭 on 2018/4/25.
@@ -66,6 +70,8 @@ public class KBounceScrollView extends NestedScrollView {
 
     public boolean openUpAnime = true;//fixme 上滑弹性动画开启。
     public boolean openDownAnime = true;//fixme 下滑弹性动画开启
+    public int maxMoveHeightDrop_Down = 0;//fixme 最大下拉高度(0,默认就是控件高度的一半。)
+    public int maxMoveHeightDrop_Up = 0;//fixme 最大上拉高度
 
     //解决嵌套滑动冲突。
     @Override
@@ -284,7 +290,20 @@ public class KBounceScrollView extends NestedScrollView {
                     int top = inner.getTop() - deltaY / 2;
                     int bottom = inner.getBottom() - deltaY / 2;
                     //移动最大不能超过总高度的一半
-                    if (top < getHeight() / 2 && bottom > getHeight() / 2 && !bAnime) {
+                    if (maxMoveHeightDrop_Down <= 0) {
+                        maxMoveHeightDrop_Down = getHeight() / 2;//最大下拉高度
+                    }
+                    if (maxMoveHeightDrop_Up <= 0) {
+                        maxMoveHeightDrop_Up = getHeight() / 2;//最大上拉拉高度
+                    }
+                    if(top > maxMoveHeightDrop_Down ){
+                        top=maxMoveHeightDrop_Down;
+                    }
+                    if(bottom<(getHeight() - maxMoveHeightDrop_Up)){
+                        bottom=(getHeight() - maxMoveHeightDrop_Up);
+                    }
+                    currentTop=top;
+                    if (top <= maxMoveHeightDrop_Down && bottom >= (getHeight() - maxMoveHeightDrop_Up) && !bAnime) {
                         layout2(inner.getLeft(), top,
                                 inner.getRight(), bottom);
                     } else {
@@ -299,37 +318,47 @@ public class KBounceScrollView extends NestedScrollView {
         }
     }
 
+    int currentTop=0;//当前顶部值。
     /***
      * 回缩动画
      */
     public void animation() {
         if (!bAnime) {
             bAnime = true;//开始动画
-            int top = inner.getTop();
+//            int top = inner.getTop();
             // 开启移动动画
-            TranslateAnimation ta = new TranslateAnimation(0, 0, inner.getTop(),
-                    normal.top);
-            ta.setDuration(200);
-            ta.setAnimationListener(new Animation.AnimationListener() {
+//            TranslateAnimation ta = new TranslateAnimation(0, 0, inner.getTop(),
+//                    normal.top);
+//            ta.setDuration(200);
+//            ta.setAnimationListener(new Animation.AnimationListener() {
+//                @Override
+//                public void onAnimationStart(Animation animation) {
+//
+//                }
+//
+//                @Override
+//                public void onAnimationEnd(Animation animation) {
+//                    bAnime = false;//动画结束
+//                }
+//
+//                @Override
+//                public void onAnimationRepeat(Animation animation) {
+//                    bAnime = false;
+//                }
+//            });
+//            inner.startAnimation(ta);
+            // 设置回到正常的布局位置
+            //layout2(normal.left, normal.top, normal.right, normal.bottom);
+            KView.Companion.ofInt(this,"currentTop",0,100,new int[]{currentTop,0},new Function1<Integer, Unit>() {
                 @Override
-                public void onAnimationStart(Animation animation) {
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    bAnime = false;//动画结束
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                    bAnime = false;
+                public Unit invoke(Integer values) {
+                    layout2(normal.left, values, normal.right, values+(normal.bottom-normal.top));
+                    if(values==0){
+                        bAnime = false;//动画结束
+                    }
+                    return null;
                 }
             });
-            inner.startAnimation(ta);
-            // 设置回到正常的布局位置
-            layout2(normal.left, normal.top, normal.right, normal.bottom);
-
             normal.setEmpty();
         }
     }
@@ -358,7 +387,15 @@ public class KBounceScrollView extends NestedScrollView {
             }
             //layoutParams.setMargins((int) (layoutParams.leftMargin), tt, (int) (layoutParams.rightMargin), (int) (layoutParams.bottomMargin));
             //Log.e("test", "t:\t"+t+"\ttt:\t" + tt);
-
+            //下拉
+            if (t >= 0 && dropDown != null) {
+                onDropDownAutoMatrixBg(t);
+                dropDown.onDown(t);
+            }
+            //上拉
+            if (t <= 0 && dropUp != null) {
+                dropUp.onUp(Math.abs(t));
+            }
         }
     }
 
@@ -420,5 +457,32 @@ public class KBounceScrollView extends NestedScrollView {
 //            //向上滚动（上面的内容显示出来）
 //        }
 //    }
+
+    //图片下拉监听。
+    protected void onDropDownAutoMatrixBg(int distance) { }
+
+    private DropDown dropDown;
+
+    //fixme 接口，下拉监听
+    public void dropDown(DropDown dropDown) {
+        this.dropDown = dropDown;
+    }
+
+    public interface DropDown {
+        //distance是当前下拉的值，即下拉的距离。是正数。
+        void onDown(int distance);
+    }
+
+    private DropUp dropUp;
+
+    //fixme 接口，上拉监听
+    public void dropUp(DropUp dropUp) {
+        this.dropUp = dropUp;
+    }
+
+    public interface DropUp {
+        //distance是当前上拉的值，即上拉的距离。是正数。距离都是正数。
+        void onUp(int distance);
+    }
 
 }
