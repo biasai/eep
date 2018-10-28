@@ -58,8 +58,25 @@ open class KAppCompatActivity : AppCompatActivity() {
         return true
     }
 
-    open var isPortrait = true//是否竖屏。默认就是竖屏。
-    open var isOrientation = true//是否固定竖屏横屏方向。true会固定方向。false就不会。
+    open fun isPortrait(): Boolean {
+        return true//是否竖屏。默认就是竖屏。
+    }
+
+    //fixme 是否进行切屏(横屏和竖屏的转换)
+    open fun isOrientation(): Boolean {
+        return true//fixme 是否固定竖屏或横屏方向。true会固定方向。false就不会(竖屏，横屏无效)。
+    }
+
+    //true 竖屏，false横屏
+    open fun orientation(isPortrait: Boolean) {
+        if (isOrientation()) {
+            if (isPortrait) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)//竖屏
+            } else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)//横屏
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         try {
@@ -69,13 +86,8 @@ open class KAppCompatActivity : AppCompatActivity() {
             //fixme 这个Bug在 targetSdkVersion >= 27时，且系统是8.0才会出现 Only fullscreen activities can request orientation
             if (Build.VERSION.SDK_INT == 26 && getApplicationInfo().targetSdkVersion >= 26) {
                 //这个情况会崩溃，不能横竖屏。是系统Bug
-            } else if (isOrientation) {
-                if (isPortrait) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)//竖屏
-                } else {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)//横屏
-
-                }
+            } else {
+                orientation(isPortrait())
             }
             if (enableSliding()) {
                 //开启左滑移除效果

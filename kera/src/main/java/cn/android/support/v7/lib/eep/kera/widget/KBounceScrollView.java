@@ -388,13 +388,17 @@ public class KBounceScrollView extends NestedScrollView {
             //layoutParams.setMargins((int) (layoutParams.leftMargin), tt, (int) (layoutParams.rightMargin), (int) (layoutParams.bottomMargin));
             //Log.e("test", "t:\t"+t+"\ttt:\t" + tt);
             //下拉
-            if (t >= 0 && dropDown != null) {
+            if (t >= 0) {
                 onDropDownAutoMatrixBg(t);
-                dropDown.onDown(t);
+                if(dropDown != null){
+                    dropDown.onDown(t);
+                }
             }
             //上拉
-            if (t <= 0 && dropUp != null) {
-                dropUp.onUp(Math.abs(t));
+            if (t <= 0) {
+                if(dropUp != null){
+                    dropUp.onUp(Math.abs(t));
+                }
             }
         }
     }

@@ -603,6 +603,7 @@ open class KGradientScrollView : KBounceScrollView {
                 //Log.e("test","拉伸比例:\t"+sx)
                 var height2=it.height+distance*maxAutoMatrixBgScaleSeed
                 var width2=it.width*(height2.toFloat()/it.height.toFloat())
+                //Log.e("test","距离:\t"+distance+"\t高度:\t"+it.height+"\tmaxAutoMatrixBgScaleSeed:\t"+maxAutoMatrixBgScaleSeed)
                 autoMatrixBgScale(width2.toInt(),height2.toInt())
             }
         }

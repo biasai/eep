@@ -192,12 +192,12 @@ open class KPx {
      * 不要在适配器里。对图片进行压缩。适配器反反复复的执行。多次执行。会内存溢出的。切记。
      *
      *
-     * 根据宽和比率压缩Bitmap
-     * 这个方法，图片不会变形[取中间的那一部分]
+     * 根据宽和宽的比率压缩Bitmap
+     * 这个方法，图片不会变形（按比例缩放）[取中间的那一部分]
      *
      * @param src   原图
      * @param width 压缩后的宽
-     * @param height 压缩后的高
+     * @param height 压缩后的高（实际的高，是根据宽和宽的比例算出来的。按比例计算出来的。）
      * @param isRecycle 是否释放原图
      * @return
      */
@@ -216,8 +216,10 @@ open class KPx {
             if (pp < 0.01) {
                 //fixme Bitmap.createScaledBitmap 如果缩放位图和原有位图大小差异在1%之内，使用的还是同一个位图对象。
                 //fixme 大小差异超过1%左右，使用的就是新的位图，和原位图就没有关系了。
+                //fixme 要求的宽和高与位图的宽和高，比例一致。
                 dst = Bitmap.createScaledBitmap(src, width.toInt(), (width * sp).toInt(), true)
             } else {
+                //fixme 要求的宽和高与位图的宽和高，比例不一致。按比例要求，居中截取。
                 val p = src.width.toFloat() / width
                 val heith = src.height.toFloat() / p
                 dst = Bitmap.createScaledBitmap(src, width.toInt(), heith.toInt(), true)
