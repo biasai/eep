@@ -25,7 +25,8 @@ public class KLimitInputTextWatcher implements TextWatcher {
     public String CHINA_REGEX = "[^\\u4E00-\\u9FA5]";
 
     /**
-     * 只允许输入大小写字母和数字
+     * fixme 只允许输入大小写字母和数字
+     * fixme "[^A-Za-z0-9*.,，。+-]" 要什么字符就往后面加就行了
      */
     public String ENGLISH_REGEX = "[^A-Za-z0-9]";
 

@@ -9,10 +9,8 @@ import android.widget.TextView
 import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
-import android.support.v4.app.INotificationSideChannel
 import android.text.*
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -23,7 +21,7 @@ import cn.android.support.v7.lib.eep.kera.base.KView
 import cn.android.support.v7.lib.eep.kera.bean.KRadius
 import cn.android.support.v7.lib.eep.kera.bean.KSearch
 import cn.android.support.v7.lib.eep.kera.common.kpx
-import cn.android.support.v7.lib.eep.kera.https.KBitmaps
+import cn.android.support.v7.lib.eep.kera.https.bit.KBitmaps
 import cn.android.support.v7.lib.eep.kera.utils.KTimerUtils
 import cn.android.support.v7.lib.eep.kera.utils.KSelectorUtils
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils

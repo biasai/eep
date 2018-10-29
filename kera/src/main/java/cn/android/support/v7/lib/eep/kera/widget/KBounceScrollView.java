@@ -70,7 +70,7 @@ public class KBounceScrollView extends NestedScrollView {
 
     public boolean openUpAnime = true;//fixme 上滑弹性动画开启。
     public boolean openDownAnime = true;//fixme 下滑弹性动画开启
-    public int maxMoveHeightDrop_Down = 0;//fixme 最大下拉高度(0,默认就是控件高度的一半。)
+    public int maxMoveHeightDrop_Down = 0;//fixme 最大下拉高度(0,默认就是整个控件的高度。)
     public int maxMoveHeightDrop_Up = 0;//fixme 最大上拉高度
 
     //解决嵌套滑动冲突。
@@ -291,10 +291,12 @@ public class KBounceScrollView extends NestedScrollView {
                     int bottom = inner.getBottom() - deltaY / 2;
                     //移动最大不能超过总高度的一半
                     if (maxMoveHeightDrop_Down <= 0) {
-                        maxMoveHeightDrop_Down = getHeight() / 2;//最大下拉高度
+                        //maxMoveHeightDrop_Down = getHeight() / 2;//最大下拉高度
+                        maxMoveHeightDrop_Down = getHeight();
                     }
                     if (maxMoveHeightDrop_Up <= 0) {
-                        maxMoveHeightDrop_Up = getHeight() / 2;//最大上拉拉高度
+                        //maxMoveHeightDrop_Up = getHeight() / 2;//最大上拉拉高度
+                        maxMoveHeightDrop_Up = getHeight();
                     }
                     if(top > maxMoveHeightDrop_Down ){
                         top=maxMoveHeightDrop_Down;

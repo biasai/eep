@@ -9,7 +9,6 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +16,6 @@ import android.view.ViewParent
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.TranslateAnimation
-import android.widget.FrameLayout
 import cn.android.support.v7.lib.eep.kera.common.kpx
 import cn.android.support.v7.lib.eep.kera.utils.KTimerUtils
 import cn.android.support.v7.lib.eep.kera.utils.KSelectorUtils
@@ -25,13 +23,12 @@ import cn.android.support.v7.lib.eep.kera.widget.KRadiusRelativeLayout
 import cn.android.support.v7.lib.eep.kera.widget.KRadiusTextView
 import cn.android.support.v7.lib.eep.kera.R
 import cn.android.support.v7.lib.eep.kera.bean.KRadius
-import cn.android.support.v7.lib.eep.kera.https.KBitmaps
+import cn.android.support.v7.lib.eep.kera.https.bit.KBitmaps
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
 import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.runOnUiThread
-import org.jetbrains.anko.sdk25.coroutines.onClick
 
 
 /**

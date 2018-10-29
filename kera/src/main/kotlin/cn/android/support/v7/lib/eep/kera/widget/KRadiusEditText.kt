@@ -13,7 +13,6 @@ import android.text.*
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.view.*
 import android.view.animation.TranslateAnimation
 import android.view.inputmethod.EditorInfo
@@ -26,7 +25,7 @@ import cn.android.support.v7.lib.eep.kera.bean.KSearch
 import cn.android.support.v7.lib.eep.kera.common.kpx
 import cn.android.support.v7.lib.eep.kera.helper.KAsteriskPasswordTransformationMethod
 import cn.android.support.v7.lib.eep.kera.helper.KLimitInputTextWatcher
-import cn.android.support.v7.lib.eep.kera.https.KBitmaps
+import cn.android.support.v7.lib.eep.kera.https.bit.KBitmaps
 import cn.android.support.v7.lib.eep.kera.utils.KStringUtils
 import cn.android.support.v7.lib.eep.kera.utils.KTimerUtils
 import cn.android.support.v7.lib.eep.kera.utils.KSelectorUtils

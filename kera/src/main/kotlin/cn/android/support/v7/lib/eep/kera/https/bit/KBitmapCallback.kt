@@ -1,6 +1,7 @@
-package cn.android.support.v7.lib.eep.kera.https
+package cn.android.support.v7.lib.eep.kera.https.bit
 
 import android.graphics.Bitmap
+import cn.android.support.v7.lib.eep.kera.https.KHttp
 
 /**
  * 位图回调

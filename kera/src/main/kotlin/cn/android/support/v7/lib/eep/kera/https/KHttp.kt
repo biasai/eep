@@ -5,8 +5,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import cn.android.support.v7.lib.eep.kera.common.kpx
-import cn.android.support.v7.lib.eep.kera.https.ok.KGenericsCallback
-import cn.android.support.v7.lib.eep.kera.https.ok.KHttps
+import cn.android.support.v7.lib.eep.kera.https.bit.KBitmapCallback
+import cn.android.support.v7.lib.eep.kera.https.bit.KBitmaps
+import cn.android.support.v7.lib.eep.kera.https.ko.KGenericsCallback
+import cn.android.support.v7.lib.eep.kera.https.ko.KHttps
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
 import cn.android.support.v7.lib.eep.kera.utils.KCachesUtils
 import kotlinx.coroutines.experimental.async

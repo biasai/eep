@@ -24,7 +24,7 @@ import cn.android.support.v7.lib.eep.kera.R
 import cn.android.support.v7.lib.eep.kera.base.KView
 import cn.android.support.v7.lib.eep.kera.bean.KRadius
 import cn.android.support.v7.lib.eep.kera.common.kpx
-import cn.android.support.v7.lib.eep.kera.https.KBitmaps
+import cn.android.support.v7.lib.eep.kera.https.bit.KBitmaps
 import cn.android.support.v7.lib.eep.kera.utils.KTimerUtils
 import cn.android.support.v7.lib.eep.kera.utils.KSelectorUtils
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils

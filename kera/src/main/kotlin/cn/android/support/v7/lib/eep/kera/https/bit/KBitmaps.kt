@@ -1,4 +1,4 @@
-package cn.android.support.v7.lib.eep.kera.https
+package cn.android.support.v7.lib.eep.kera.https.bit
 
 import android.app.Activity
 import android.graphics.*
@@ -10,6 +10,7 @@ import cn.android.support.v7.lib.eep.kera.utils.KProportionUtils
 import kotlinx.coroutines.experimental.async
 import cn.android.support.v7.lib.eep.kera.common.KProgressbar
 import cn.android.support.v7.lib.eep.kera.common.kpx
+import cn.android.support.v7.lib.eep.kera.https.KHttp
 
 
 //调用案例

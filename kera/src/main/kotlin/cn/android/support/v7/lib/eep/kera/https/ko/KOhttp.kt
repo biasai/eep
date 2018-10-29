@@ -1,6 +1,6 @@
-package cn.android.support.v7.lib.eep.kera.https.ok
+package cn.android.support.v7.lib.eep.kera.https.ko
 
-object KOkhttp {
+object KOhttp {
     fun url(url: String): KHttps {
         return KHttps().url(url)
     }

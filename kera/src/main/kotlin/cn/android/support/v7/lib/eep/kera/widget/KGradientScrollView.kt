@@ -6,15 +6,12 @@ import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.util.AttributeSet
-import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import cn.android.support.v7.lib.eep.kera.base.KView
 import cn.android.support.v7.lib.eep.kera.common.kpx
-import cn.android.support.v7.lib.eep.kera.https.KBitmaps
+import cn.android.support.v7.lib.eep.kera.https.bit.KBitmaps
 import cn.android.support.v7.lib.eep.kera.utils.KAssetsUtils
-import cn.android.support.v7.lib.eep.kera.widget.KBounceScrollView
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.runOnUiThread
 
